@@ -1,0 +1,77 @@
+﻿{
+  "name": "UCHN — Unified Care & Health Network",
+  "short_name": "UCHN Health",
+  "description": "Unified healthcare network connecting Patients, Doctors, and Clinics for instant appointments, live queues, emergency SOS, and medicine tracking.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "lang": "en",
+  "categories": ["medical", "health", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Emergency SOS",
+      "short_name": "SOS Alert",
+      "description": "Trigger an immediate medical SOS dispatch",
+      "url": "/patient/emergency",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Find Doctors",
+      "short_name": "Book Doctor",
+      "description": "Search verified doctors and book appointment slots",
+      "url": "/patient/doctors",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Live Waiting Queue",
+      "short_name": "Live Queue",
+      "description": "Check real-time clinic queue status and estimated wait time",
+      "url": "/patient/queue",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Search Medicines",
+      "short_name": "Pharmacy Stock",
+      "description": "Check live pharmacy inventory and medicine availability",
+      "url": "/patient/medicines",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

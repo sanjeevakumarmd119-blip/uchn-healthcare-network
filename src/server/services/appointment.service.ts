@@ -1,4 +1,4 @@
-import prisma from '../db';
+﻿import prisma from '../db';
 import { BookAppointmentInput, UpdateAppointmentStatusInput } from '../validators/appointment.validator';
 import { NotificationService } from './notification.service';
 import { AuditService } from './audit.service';
@@ -16,87 +16,92 @@ export class AppointmentService {
     const appointmentDate = new Date(input.appointmentDate);
 
     // Run within an atomic database transaction
-    const appointment = await prisma.$transaction(async (tx) => {
-      // 1. Fetch and verify slot with immediate availability check
-      const slot = await tx.appointmentSlot.findUnique({
-        where: { id: input.slotId },
-        include: {
-          doctor: {
-            include: {
-              user: true,
+    const appointment = await prisma.$transaction(
+      async (tx) => {
+        // 1. Fetch and verify slot with immediate availability check
+        const slot = await tx.appointmentSlot.findUnique({
+          where: { id: input.slotId },
+          include: {
+            doctor: {
+              include: {
+                user: true,
+              },
             },
+            clinic: true,
           },
-          clinic: true,
-        },
-      });
+        });
 
-      if (!slot) {
-        throw new Error('Appointment slot not found.');
-      }
+        if (!slot) {
+          throw new Error('Appointment slot not found.');
+        }
 
-      if (slot.isBooked || slot.currentBookings >= slot.maxCapacity) {
-        throw new Error('This appointment slot has just been booked by another patient. Please choose another slot.');
-      }
+        if (slot.isBooked || slot.currentBookings >= slot.maxCapacity) {
+          throw new Error(
+            'This appointment slot has just been booked by another patient. Please choose another slot.'
+          );
+        }
 
-      // 2. Lock slot
-      await tx.appointmentSlot.update({
-        where: { id: input.slotId },
-        data: {
-          isBooked: true,
-          currentBookings: slot.currentBookings + 1,
-        },
-      });
+        // 2. Lock slot
+        await tx.appointmentSlot.update({
+          where: { id: input.slotId },
+          data: {
+            isBooked: true,
+            currentBookings: slot.currentBookings + 1,
+          },
+        });
 
-      // 3. Generate unique appointment number
-      const randSuffix = Math.floor(1000 + Math.random() * 9000);
-      const appointmentNumber = `UCHN-APT-${Date.now().toString().slice(-4)}${randSuffix}`;
+        // 3. Generate unique appointment number
+        const randSuffix = Math.floor(1000 + Math.random() * 9000);
+        const appointmentNumber = `UCHN-APT-${Date.now().toString().slice(-4)}${randSuffix}`;
 
-      // 4. Create appointment
-      const newAppointment = await tx.appointment.create({
-        data: {
-          appointmentNumber,
-          patientId: patientProfileId,
-          doctorId: input.doctorId,
-          clinicId: input.clinicId,
-          slotId: input.slotId,
-          appointmentDate,
-          startTime: input.startTime,
-          endTime: input.endTime,
-          status: 'CONFIRMED',
-          reason: input.reason,
-          notes: input.notes || null,
-        },
-        include: {
-          doctor: {
-            include: {
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  phone: true,
+        // 4. Create appointment
+        const newAppointment = await tx.appointment.create({
+          data: {
+            appointmentNumber,
+            patientId: patientProfileId,
+            doctorId: input.doctorId,
+            clinicId: input.clinicId,
+            slotId: input.slotId,
+            appointmentDate,
+            startTime: input.startTime,
+            endTime: input.endTime,
+            status: 'CONFIRMED',
+            reason: input.reason,
+            notes: input.notes || null,
+          },
+          include: {
+            doctor: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    phone: true,
+                  },
+                },
+              },
+            },
+            clinic: true,
+            patient: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    phone: true,
+                  },
                 },
               },
             },
           },
-          clinic: true,
-          patient: {
-            include: {
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  phone: true,
-                },
-              },
-            },
-          },
-        },
-      });
+        });
 
-      return newAppointment;
-    });
+        return newAppointment;
+      },
+      { maxWait: 15000, timeout: 20000 }
+    );
 
     // 5. Post-transaction notifications & audit
     await NotificationService.create({
@@ -268,31 +273,36 @@ export class AppointmentService {
       throw new Error('Appointment not found.');
     }
 
-    const updated = await prisma.$transaction(async (tx) => {
-      // If cancelling, release the slot
-      if (input.status === 'CANCELLED' && appointment.slotId) {
-        await tx.appointmentSlot.update({
-          where: { id: appointment.slotId },
+    const updated = await prisma.$transaction(
+      async (tx) => {
+        // If cancelling, release the slot
+        if (input.status === 'CANCELLED' && appointment.slotId) {
+          await tx.appointmentSlot.update({
+            where: { id: appointment.slotId },
+            data: {
+              isBooked: false,
+              currentBookings: { decrement: 1 },
+            },
+          });
+        }
+
+        return tx.appointment.update({
+          where: { id: appointmentId },
           data: {
-            isBooked: false,
-            currentBookings: { decrement: 1 },
+            status: input.status,
+            notes: input.notes
+              ? `${appointment.notes || ''}\n${input.notes}`.trim()
+              : appointment.notes,
+          },
+          include: {
+            doctor: { include: { user: true } },
+            clinic: true,
+            patient: { include: { user: true } },
           },
         });
-      }
-
-      return tx.appointment.update({
-        where: { id: appointmentId },
-        data: {
-          status: input.status,
-          notes: input.notes ? `${appointment.notes || ''}\n${input.notes}`.trim() : appointment.notes,
-        },
-        include: {
-          doctor: { include: { user: true } },
-          clinic: true,
-          patient: { include: { user: true } },
-        },
-      });
-    });
+      },
+      { maxWait: 15000, timeout: 20000 }
+    );
 
     // Notify patient
     await NotificationService.create({
@@ -319,4 +329,3 @@ export class AppointmentService {
     return updated;
   }
 }
-

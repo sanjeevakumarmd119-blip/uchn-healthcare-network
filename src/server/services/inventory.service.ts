@@ -1,4 +1,4 @@
-import prisma from '../db';
+﻿import prisma from '../db';
 import { StockTransactionInput, CreateInventoryItemInput } from '../validators/inventory.validator';
 import { NotificationService } from './notification.service';
 import { AuditService } from './audit.service';
@@ -74,7 +74,7 @@ export class InventoryService {
       });
 
       return { updatedInventory, transaction };
-    });
+    }, { maxWait: 15000, timeout: 20000 });
 
     // Check if low stock alert should be triggered
     if (newStatus === 'LOW_STOCK' || newStatus === 'OUT_OF_STOCK') {
@@ -208,4 +208,3 @@ export class InventoryService {
     return created;
   }
 }
-

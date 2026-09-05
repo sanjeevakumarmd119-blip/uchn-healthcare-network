@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -12,9 +12,24 @@
     --primary-foreground: 210 40% 98%;
   }
 
+  html {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
   body {
     @apply bg-[#F8FAFC] text-slate-900 antialiased font-sans min-h-screen selection:bg-sky-500 selection:text-white;
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
   }
+}
+
+/* iOS Safe Area Padding Utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 1rem);
 }
 
 /* Custom scrollbars */
@@ -46,4 +61,3 @@
 .emergency-pulse {
   animation: emergencyPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-
