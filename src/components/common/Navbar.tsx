@@ -6,21 +6,20 @@ import { useAuth } from '@/context/AuthContext';
 import { useLocation } from '@/context/LocationContext';
 import { useAppDownload } from '@/context/AppDownloadContext';
 import { NotificationBell } from './NotificationBell';
-import { MapPin, LogOut, ShieldAlert, Download, Smartphone } from 'lucide-react';
+import { MapPin, LogOut, ShieldAlert, Smartphone } from 'lucide-react';
 import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
 import { APP_CONFIG } from '@/config/version';
 
 export function Navbar() {
   const { user, logout } = useAuth();
   const { location, openLocationModal } = useLocation();
-  const { openDownloadModal, isAppInstalled, toggleDoctorDrawer } = useAppDownload();
+  const { openDownloadModal, isAppInstalled } = useAppDownload();
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
         {/* Brand Logo & App Icon */}
-        <div className="flex items-center gap-2.5 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 rounded-xl bg-navy-950 p-1 flex items-center justify-center text-white shadow-subtle group-hover:scale-105 transition-all overflow-hidden border border-navy-800">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -48,31 +47,31 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* Location Selector Pill (Responsive for both Mobile & Desktop) */}
+          {/* Location Selector Pill (Desktop / Tablet viewports) */}
           <button
             onClick={openLocationModal}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-medium text-slate-700 transition-colors"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-medium text-slate-700 transition-colors truncate flex-shrink-0"
             title="Click to change healthcare location"
           >
             <MapPin className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
-            <span className="truncate max-w-[85px] sm:max-w-[130px] text-[11px] sm:text-xs">
+            <span className="truncate max-w-[90px] sm:max-w-[130px] text-[11px] sm:text-xs">
               {location.city}
             </span>
-            <span className="text-slate-400 text-[10px] hidden xs:inline">Change</span>
+            <span className="text-slate-400 text-[10px]">Change</span>
           </button>
         </div>
 
         {/* Right Section Actions & User Status */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Universal Download App Button (Hidden if already installed) */}
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+          {/* Universal Download App Button (Hidden if already installed or on small mobile screens) */}
           {!isAppInstalled && (
             <button
               type="button"
               onClick={openDownloadModal}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-sky-800 text-xs font-semibold shadow-subtle transition-all tap-bounce cursor-pointer"
+              className="hidden xs:flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-sky-800 text-xs font-semibold shadow-subtle transition-all tap-bounce cursor-pointer"
               title="Download & Install UCHN Healthcare App"
             >
-              <Smartphone className="w-3.5 h-3.5 text-sky-600" />
+              <Smartphone className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
               <span className="hidden sm:inline">Install App</span>
               <span className="sm:hidden">App</span>
             </button>
@@ -108,7 +107,7 @@ export function Navbar() {
               </Badge>
 
               {/* User Sign out */}
-              <div className="flex items-center gap-2 pl-1.5 sm:pl-2 border-l border-slate-200">
+              <div className="flex items-center gap-1.5 sm:gap-2 pl-1.5 sm:pl-2 border-l border-slate-200">
                 <div className="flex flex-col text-right hidden md:block">
                   <span className="text-xs font-semibold text-slate-800 leading-tight">
                     {user.firstName} {user.lastName}
@@ -120,7 +119,7 @@ export function Navbar() {
 
                 <button
                   onClick={() => logout()}
-                  className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                  className="p-1.5 sm:p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                   title="Sign out"
                   aria-label="Sign out"
                 >
@@ -129,16 +128,16 @@ export function Navbar() {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <Link
                 href="/login"
-                className="px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+                className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors whitespace-nowrap"
               >
                 Sign In
               </Link>
               <Link
                 href="/register"
-                className="px-3 py-1.5 text-xs font-medium text-white bg-navy-800 hover:bg-navy-900 rounded-lg shadow-subtle transition-colors"
+                className="px-3 sm:px-3.5 py-1.5 text-xs font-bold text-white bg-navy-900 hover:bg-navy-950 active:bg-navy-950 rounded-lg shadow-subtle transition-all whitespace-nowrap tap-bounce"
               >
                 Get Started
               </Link>
