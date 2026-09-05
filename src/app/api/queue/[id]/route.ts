@@ -3,6 +3,8 @@ import { requireAuth } from '@/server/auth/guards';
 import { UpdateQueueStatusSchema } from '@/server/validators/queue.validator';
 import { QueueService } from '@/server/services/queue.service';
 
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -31,4 +33,3 @@ export async function PATCH(
     );
   }
 }
-

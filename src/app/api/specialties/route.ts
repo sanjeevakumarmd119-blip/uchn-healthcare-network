@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { DoctorService } from '@/server/services/doctor.service';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const specialties = await DoctorService.getSpecialties();
@@ -15,4 +17,3 @@ export async function GET() {
     );
   }
 }
-

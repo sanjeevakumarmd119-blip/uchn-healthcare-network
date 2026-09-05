@@ -3,6 +3,8 @@ import { requireAuth } from '@/server/auth/guards';
 import { CheckInQueueSchema } from '@/server/validators/queue.validator';
 import { QueueService } from '@/server/services/queue.service';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const auth = requireAuth(req);
   if ('status' in auth) return auth;
@@ -25,4 +27,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

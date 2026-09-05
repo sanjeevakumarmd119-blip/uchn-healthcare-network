@@ -3,6 +3,8 @@ import { ForgotPasswordSchema } from '@/server/validators/auth.validator';
 import prisma from '@/server/db';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -24,7 +26,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // In production, send email with reset link. In dev/demo, return confirmation instructions.
       console.log(`[PASSWORD_RESET] Token generated for ${email}: ${resetToken}`);
     }
 
@@ -39,4 +40,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

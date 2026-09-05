@@ -3,6 +3,8 @@ import { requireAuth } from '@/server/auth/guards';
 import { UpdateEmergencyStatusSchema } from '@/server/validators/emergency.validator';
 import { EmergencyService } from '@/server/services/emergency.service';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -42,7 +44,6 @@ export async function PATCH(
     const body = await req.json();
     const validated = UpdateEmergencyStatusSchema.parse(body);
 
-    // If patient is cancelling their own emergency
     if (auth.user.role === 'PATIENT' && validated.status !== 'CANCELLED') {
       return NextResponse.json(
         { success: false, error: 'Patients can only cancel active emergency requests.' },
@@ -68,4 +69,3 @@ export async function PATCH(
     );
   }
 }
-

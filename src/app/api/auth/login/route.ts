@@ -3,6 +3,8 @@ import { LoginSchema } from '@/server/validators/auth.validator';
 import { AuthService } from '@/server/services/auth.service';
 import { setAuthCookies } from '@/server/auth/cookies';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -30,4 +32,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

@@ -3,6 +3,8 @@ import { requireAuth } from '@/server/auth/guards';
 import { UpdateAppointmentStatusSchema } from '@/server/validators/appointment.validator';
 import { AppointmentService } from '@/server/services/appointment.service';
 
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -32,4 +34,3 @@ export async function PATCH(
     );
   }
 }
-

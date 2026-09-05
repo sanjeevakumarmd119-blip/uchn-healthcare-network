@@ -3,6 +3,8 @@ import { getSessionFromRequest } from '@/server/auth/guards';
 import { AuthService } from '@/server/services/auth.service';
 import { clearAuthCookies, getAuthTokensFromCookies } from '@/server/auth/cookies';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const session = getSessionFromRequest(req);
@@ -26,4 +28,3 @@ export async function POST(req: NextRequest) {
     });
   }
 }
-

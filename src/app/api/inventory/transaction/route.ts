@@ -3,6 +3,8 @@ import { requireAuth } from '@/server/auth/guards';
 import { StockTransactionSchema } from '@/server/validators/inventory.validator';
 import { InventoryService } from '@/server/services/inventory.service';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const auth = requireAuth(req, ['DOCTOR', 'CLINIC_ADMIN']);
   if ('status' in auth) return auth;
@@ -28,4 +30,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

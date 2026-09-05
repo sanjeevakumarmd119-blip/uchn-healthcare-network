@@ -4,6 +4,8 @@ import { RequestMedicineSchema } from '@/server/validators/medicine.validator';
 import { MedicineService } from '@/server/services/medicine.service';
 import prisma from '@/server/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const auth = requireAuth(req, ['PATIENT']);
   if ('status' in auth) return auth;
@@ -79,4 +81,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-

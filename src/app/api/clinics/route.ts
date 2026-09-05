@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const clinics = await prisma.clinic.findMany({
@@ -27,4 +29,3 @@ export async function GET() {
     );
   }
 }
-

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DoctorService } from '@/server/services/doctor.service';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -22,4 +24,3 @@ export async function GET(
     );
   }
 }
-
