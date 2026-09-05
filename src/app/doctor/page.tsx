@@ -168,68 +168,76 @@ export default function DoctorDashboardOverview() {
       {/* 4 Primary Operational Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Today's Appointments */}
-        <Card className="p-5 border border-slate-200 shadow-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Appointments
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-              <Calendar className="w-5 h-5" />
+        <Link href="/doctor/appointments" className="block group">
+          <Card className="p-5 border border-slate-200 shadow-card hover:border-sky-300 hover:shadow-md transition-all cursor-pointer">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-sky-700 transition-colors">
+                Appointments
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
+                <Calendar className="w-5 h-5" />
+              </div>
             </div>
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl font-black text-slate-900">{appointments.length}</span>
-            <span className="text-xs text-slate-500 block mt-0.5">Scheduled today</span>
-          </div>
-        </Card>
+            <div className="mt-3">
+              <span className="text-3xl font-black text-slate-900">{appointments.length}</span>
+              <span className="text-xs text-slate-500 block mt-0.5">Scheduled today →</span>
+            </div>
+          </Card>
+        </Link>
 
         {/* Waiting Patients */}
-        <Card className="p-5 border border-slate-200 shadow-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Waiting Queue
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Users className="w-5 h-5" />
+        <Link href="/doctor/queue" className="block group">
+          <Card className="p-5 border border-slate-200 shadow-card hover:border-blue-300 hover:shadow-md transition-all cursor-pointer">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-blue-700 transition-colors">
+                Waiting Queue
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <Users className="w-5 h-5" />
+              </div>
             </div>
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl font-black text-blue-700">{queue.length}</span>
-            <span className="text-xs text-slate-500 block mt-0.5">In waiting room</span>
-          </div>
-        </Card>
+            <div className="mt-3">
+              <span className="text-3xl font-black text-blue-700">{queue.length}</span>
+              <span className="text-xs text-slate-500 block mt-0.5">In waiting room →</span>
+            </div>
+          </Card>
+        </Link>
 
         {/* Active Emergencies */}
-        <Card className="p-5 border border-red-200 bg-red-50/30 shadow-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-red-800 uppercase tracking-wider">
-              Emergencies
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
-              <ShieldAlert className="w-5 h-5" />
+        <Link href="/doctor/emergency" className="block group">
+          <Card className="p-5 border border-red-200 bg-red-50/30 shadow-card hover:border-red-400 hover:shadow-md transition-all cursor-pointer">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-red-800 uppercase tracking-wider group-hover:text-red-900 transition-colors">
+                Emergencies
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
             </div>
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl font-black text-red-600">{emergencies.length}</span>
-            <span className="text-xs text-red-800/70 block mt-0.5">Active cases</span>
-          </div>
-        </Card>
+            <div className="mt-3">
+              <span className="text-3xl font-black text-red-600">{emergencies.length}</span>
+              <span className="text-xs text-red-800/70 block mt-0.5">Active cases →</span>
+            </div>
+          </Card>
+        </Link>
 
         {/* Low Stock Medicines */}
-        <Card className="p-5 border border-amber-200 bg-amber-50/30 shadow-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
-              Low Stock Alert
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-              <Pill className="w-5 h-5" />
+        <Link href="/doctor/inventory" className="block group">
+          <Card className="p-5 border border-amber-200 bg-amber-50/30 shadow-card hover:border-amber-400 hover:shadow-md transition-all cursor-pointer">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider group-hover:text-amber-900 transition-colors">
+                Low Stock Alert
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                <Pill className="w-5 h-5" />
+              </div>
             </div>
-          </div>
-          <div className="mt-3">
-            <span className="text-3xl font-black text-amber-700">{lowStockCount}</span>
-            <span className="text-xs text-amber-800/70 block mt-0.5">Requiring restock</span>
-          </div>
-        </Card>
+            <div className="mt-3">
+              <span className="text-3xl font-black text-amber-700">{lowStockCount}</span>
+              <span className="text-xs text-amber-800/70 block mt-0.5">Requiring restock →</span>
+            </div>
+          </Card>
+        </Link>
       </div>
 
       {/* Main Two Columns: Patient Waiting List & Today's Schedule */}
@@ -241,10 +249,11 @@ export default function DoctorDashboardOverview() {
               <Users className="w-4 h-4 text-sky-600" />
               <span>Live Patient Waiting List</span>
             </CardTitle>
-            <Link href="/doctor/queue">
-              <Button variant="ghost" size="sm" className="text-xs text-sky-600">
-                Manage Queue <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </Button>
+            <Link
+              href="/doctor/queue"
+              className="inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-800 px-2.5 py-1 rounded-lg hover:bg-sky-50 transition-colors"
+            >
+              Manage Queue <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </CardHeader>
 
@@ -256,16 +265,17 @@ export default function DoctorDashboardOverview() {
             ) : (
               <div className="space-y-2.5">
                 {queue.slice(0, 4).map((item) => (
-                  <div
+                  <Link
                     key={item.id}
-                    className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/70 text-xs"
+                    href="/doctor/queue"
+                    className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-sky-50/60 hover:border-sky-300 transition-all text-xs cursor-pointer group shadow-2xs"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-sky-600 text-white font-bold flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-sky-600 text-white font-bold flex items-center justify-center group-hover:scale-105 transition-transform">
                         #{item.queueNumber}
                       </div>
                       <div>
-                        <h4 className="font-bold text-slate-900">
+                        <h4 className="font-bold text-slate-900 group-hover:text-sky-900 transition-colors">
                           {item.patient?.user.firstName} {item.patient?.user.lastName}
                         </h4>
                         <span className="text-[11px] text-slate-400">
@@ -274,13 +284,16 @@ export default function DoctorDashboardOverview() {
                       </div>
                     </div>
 
-                    <Badge
-                      variant={item.status === 'IN_CONSULTATION' ? 'success' : 'default'}
-                      className="text-[10px]"
-                    >
-                      {item.status.replace('_', ' ')}
-                    </Badge>
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={item.status === 'IN_CONSULTATION' ? 'success' : 'default'}
+                        className="text-[10px]"
+                      >
+                        {item.status.replace('_', ' ')}
+                      </Badge>
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-sky-600 group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                  </Link>
                 ))}
               </div>
             )}
@@ -294,10 +307,11 @@ export default function DoctorDashboardOverview() {
               <Calendar className="w-4 h-4 text-navy-700" />
               <span>Appointments Schedule</span>
             </CardTitle>
-            <Link href="/doctor/appointments">
-              <Button variant="ghost" size="sm" className="text-xs text-sky-600">
-                Full Schedule <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </Button>
+            <Link
+              href="/doctor/appointments"
+              className="inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-800 px-2.5 py-1 rounded-lg hover:bg-sky-50 transition-colors"
+            >
+              Full Schedule <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </CardHeader>
 
@@ -309,13 +323,14 @@ export default function DoctorDashboardOverview() {
             ) : (
               <div className="space-y-2.5">
                 {appointments.slice(0, 4).map((apt) => (
-                  <div
+                  <Link
                     key={apt.id}
-                    className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/70 text-xs"
+                    href="/doctor/appointments"
+                    className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-sky-50/60 hover:border-sky-300 transition-all text-xs cursor-pointer group shadow-2xs"
                   >
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900">
+                        <span className="font-bold text-slate-900 group-hover:text-sky-900 transition-colors">
                           {apt.patient?.user.firstName} {apt.patient?.user.lastName}
                         </span>
                         <span className="text-[10px] font-mono text-slate-400">
@@ -327,19 +342,22 @@ export default function DoctorDashboardOverview() {
                       </span>
                     </div>
 
-                    <Badge
-                      variant={
-                        apt.status === 'CONFIRMED'
-                          ? 'success'
-                          : apt.status === 'CHECKED_IN'
-                          ? 'default'
-                          : 'secondary'
-                      }
-                      className="text-[10px]"
-                    >
-                      {apt.status}
-                    </Badge>
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={
+                          apt.status === 'CONFIRMED'
+                            ? 'success'
+                            : apt.status === 'CHECKED_IN'
+                            ? 'default'
+                            : 'secondary'
+                        }
+                        className="text-[10px]"
+                      >
+                        {apt.status}
+                      </Badge>
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-sky-600 group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                  </Link>
                 ))}
               </div>
             )}

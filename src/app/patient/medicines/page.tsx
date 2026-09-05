@@ -14,16 +14,17 @@ import {
   Building2,
   ShoppingBag,
   Truck,
-  Check,
+  Sparkles,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
+import { BackButton } from '@/components/common/BackButton';
 import { formatCurrency } from '@/lib/utils';
 import { Medicine } from '@/types';
+import { AIPrescriptionScannerModal } from '@/components/ai/AIPrescriptionScannerModal';
 
 export default function PatientMedicinesPage() {
   const { user } = useAuth();
@@ -35,6 +36,7 @@ export default function PatientMedicinesPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isAIScannerOpen, setIsAIScannerOpen] = useState(false);
 
   // Request Medicine Modal
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
@@ -51,12 +53,13 @@ export default function PatientMedicinesPage() {
     fetchMedicines();
   }, [selectedCategory, location.latitude, location.longitude]);
 
-  const fetchMedicines = async () => {
+  const fetchMedicines = async (overrideSearch?: string) => {
     try {
       setIsLoading(true);
+      const query = overrideSearch !== undefined ? overrideSearch : searchQuery;
       const params = new URLSearchParams();
       if (selectedCategory !== 'ALL') params.append('category', selectedCategory);
-      if (searchQuery.trim()) params.append('search', searchQuery.trim());
+      if (query.trim()) params.append('search', query.trim());
       if (location.latitude && location.longitude) {
         params.append('lat', location.latitude.toString());
         params.append('lng', location.longitude.toString());
@@ -88,7 +91,6 @@ export default function PatientMedicinesPage() {
       return;
     }
 
-    // Pick first clinic with available stock by default
     const availableClinic = med.clinics?.find((c) => c.quantity > 0);
 
     setSelectedMedicine(med);
@@ -101,7 +103,12 @@ export default function PatientMedicinesPage() {
     setIsRequestModalOpen(true);
   };
 
-  const handleRequestSubmit = async (e: React.FormEvent) => {
+  const handleAIMedicineSelect = (medName: string) => {
+    setSearchQuery(medName);
+    fetchMedicines(medName);
+  };
+
+  const handleSubmitRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMedicine || !selectedClinicId) return;
 
@@ -127,7 +134,7 @@ export default function PatientMedicinesPage() {
       }
 
       setRequestSuccess(true);
-      fetchMedicines(); // Refresh stock counts
+      fetchMedicines();
     } catch (err: any) {
       setRequestError(err.message || 'Failed to submit request');
     } finally {
@@ -141,14 +148,26 @@ export default function PatientMedicinesPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <BackButton fallbackUrl="/patient" />
+
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
-          Medicine Stock Discovery & Reservation
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Search real-time clinical pharmacy inventory and request medicine pickup or home delivery.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
+            Pharmacy Medicine Reservation & Discovery
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Search real-time clinical pharmacy inventory and place a pharmacy medicine reservation for pickup or home delivery.
+          </p>
+        </div>
+
+        <Button
+          onClick={() => setIsAIScannerOpen(true)}
+          className="self-start sm:self-auto bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-md flex items-center gap-2 flex-shrink-0"
+        >
+          <Sparkles className="w-4 h-4 text-emerald-200" />
+          <span>AI Prescription Scanner</span>
+        </Button>
       </div>
 
       {/* Search & Category Filter */}
@@ -185,7 +204,7 @@ export default function PatientMedicinesPage() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 selectedCategory === cat
-                  ? 'bg-emerald-600 text-white shadow-subtle'
+                  ? 'bg-navy-900 text-white shadow-subtle'
                   : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             >
@@ -197,148 +216,156 @@ export default function PatientMedicinesPage() {
 
       {/* Medicine Grid */}
       {isLoading ? (
-        <div className="py-16 text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto" />
-          <p className="text-xs text-slate-500 mt-3">Searching live pharmacy inventories...</p>
+        <div className="flex justify-center p-12">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
       ) : medicines.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
-          <Pill className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-800">No medicines found</h3>
-          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-            Try searching for a different generic name or category.
+          <Pill className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+          <h3 className="text-sm font-bold text-slate-700">No medicines found</h3>
+          <p className="text-xs text-slate-400 mt-1">
+            Try adjusting your search term or category filter.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {medicines.map((med) => {
             const hasStock = (med.totalStock || 0) > 0;
             return (
               <Card
                 key={med.id}
-                className="p-5 border border-slate-200 shadow-card hover:shadow-elevated transition-all flex flex-col justify-between"
+                className="flex flex-col justify-between border border-slate-200 shadow-card hover:shadow-elevated transition-all"
               >
-                <div className="space-y-3">
+                <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      <span className="text-[10px] font-bold tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase">
                         {med.category}
                       </span>
-                      <h3 className="text-base font-bold text-slate-900 mt-1.5 leading-snug">
+                      <h3 className="text-base font-bold text-slate-900 mt-1.5 leading-tight">
                         {med.name}
                       </h3>
                       <p className="text-xs text-slate-500 font-medium">
-                        Generic: {med.genericName} • {med.strength}
+                        {med.genericName} • {med.strength}
                       </p>
                     </div>
 
-                    <Badge
-                      variant={hasStock ? 'success' : 'destructive'}
-                      className="text-[10px]"
-                    >
-                      {hasStock ? 'IN STOCK' : 'OUT OF STOCK'}
+                    <Badge variant={hasStock ? 'success' : 'destructive'}>
+                      {hasStock ? `${med.totalStock} in Stock` : 'Out of Stock'}
                     </Badge>
                   </div>
 
                   <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                    {med.description}
+                    {med.description || 'Clinically verified pharmacy formulation.'}
                   </p>
 
-                  {/* Clinics Stock Breakdown */}
-                  <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                    <span className="text-[11px] font-semibold text-slate-700 block">
-                      Pharmacy Availability:
-                    </span>
-                    {med.clinics?.slice(0, 2).map((c) => (
-                      <div
-                        key={c.clinicId}
-                        className="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2 rounded-lg"
-                      >
-                        <div className="flex items-center gap-1.5 truncate max-w-[170px]">
-                          <Building2 className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                          <span className="truncate">{c.clinicName}</span>
-                        </div>
-                        <div className="flex items-center gap-2 font-medium">
-                          {c.distanceKm !== null && (
-                            <span className="text-[10px] text-slate-400">{c.distanceKm}km</span>
-                          )}
+                  <div className="pt-3 border-t border-slate-100 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400">Dosage Form:</span>
+                      <span className="font-semibold text-slate-700">{med.dosageForm}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400">Est. Price / unit:</span>
+                      <span className="font-bold text-slate-900">
+                        {formatCurrency(med.clinics?.[0]?.unitPrice || 0)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {med.clinics && med.clinics.length > 0 && (
+                    <div className="p-2.5 rounded-xl bg-slate-50 text-[11px] space-y-1">
+                      <span className="font-bold text-slate-600 block">
+                        Availability Nearby:
+                      </span>
+                      {med.clinics.slice(0, 2).map((c) => (
+                        <div
+                          key={c.clinicId}
+                          className="flex items-center justify-between text-slate-600"
+                        >
+                          <span className="truncate max-w-[140px]">{c.clinicName}</span>
                           <span
                             className={
                               c.quantity > 0
-                                ? 'text-emerald-700 font-bold'
-                                : 'text-rose-600 font-bold'
+                                ? 'font-bold text-emerald-700'
+                                : 'text-slate-400'
                             }
                           >
-                            {c.quantity > 0 ? `${c.quantity} available` : 'Out'}
+                            {c.quantity > 0 ? `${c.quantity} units` : '0 units'}
                           </span>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                      ))}
+                    </div>
+                  )}
 
-                <div className="mt-5 pt-3 border-t border-slate-100">
                   <Button
                     onClick={() => openRequestModal(med)}
                     disabled={!hasStock}
-                    variant={hasStock ? 'primary' : 'outline'}
-                    className={`w-full text-xs font-semibold ${
-                      hasStock ? 'bg-emerald-600 hover:bg-emerald-700' : ''
-                    }`}
                     size="sm"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs"
                   >
-                    {hasStock ? 'Request / Reserve Medicine' : 'Out of Stock'}
+                    <ShoppingBag className="w-3.5 h-3.5 mr-1.5" />
+                    {hasStock ? 'Request / Reserve' : 'Out of Stock'}
                   </Button>
-                </div>
+                </CardContent>
               </Card>
             );
           })}
         </div>
       )}
 
-      {/* Request Medicine Modal */}
+      {/* AI Prescription Scanner Modal */}
+      <AIPrescriptionScannerModal
+        isOpen={isAIScannerOpen}
+        onClose={() => setIsAIScannerOpen(false)}
+        onSelectMedicine={handleAIMedicineSelect}
+      />
+
+      {/* Request Modal */}
       {selectedMedicine && (
         <Modal
           isOpen={isRequestModalOpen}
           onClose={() => setIsRequestModalOpen(false)}
-          title={`Request ${selectedMedicine.name}`}
-          description={`Generic: ${selectedMedicine.genericName} • ${selectedMedicine.strength}`}
+          title={`Reserve Medicine: ${selectedMedicine.name}`}
           maxWidth="md"
         >
           {requestSuccess ? (
-            <div className="text-center py-4 space-y-3">
+            <div className="py-6 text-center space-y-4">
               <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                <Check className="w-6 h-6" />
+                <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h4 className="text-base font-bold text-slate-900">Request Placed Successfully</h4>
-              <p className="text-xs text-slate-500">
-                The pharmacy has received your reservation. You will be notified when your medicine is packed and ready.
-              </p>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Medicine Request Confirmed!
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  Your reservation for {quantity} unit(s) of {selectedMedicine.name} has been placed.
+                </p>
+              </div>
               <Button
+                size="sm"
                 onClick={() => setIsRequestModalOpen(false)}
-                className="w-full text-xs mt-2"
+                className="bg-navy-900"
               >
                 Done
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleRequestSubmit} className="space-y-4">
+            <form onSubmit={handleSubmitRequest} className="space-y-4 text-xs">
               {requestError && (
-                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>{requestError}</span>
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs">
+                  {requestError}
                 </div>
               )}
 
-              {/* Select Pharmacy Clinic */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                  Select Dispensing Pharmacy
+                <label className="block font-bold text-slate-700 mb-1">
+                  Select Clinic Pharmacy:
                 </label>
                 <select
                   value={selectedClinicId}
                   onChange={(e) => setSelectedClinicId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg border border-slate-300 text-xs font-medium focus:ring-2 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-200 p-2.5 bg-white focus:ring-2 focus:ring-emerald-500"
+                  required
                 >
                   {selectedMedicine.clinics?.map((c) => (
                     <option
@@ -346,55 +373,52 @@ export default function PatientMedicinesPage() {
                       value={c.clinicId}
                       disabled={c.quantity === 0}
                     >
-                      {c.clinicName} — {c.quantity > 0 ? `${c.quantity} in stock ($${c.unitPrice})` : 'Out of Stock'}
+                      {c.clinicName} — {c.quantity > 0 ? `${c.quantity} in stock` : 'Out of stock'} ({formatCurrency(c.unitPrice)})
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Quantity */}
               <div>
-                <Input
-                  label="Quantity (Packs / Units)"
+                <label className="block font-bold text-slate-700 mb-1">
+                  Quantity (Units):
+                </label>
+                <input
                   type="number"
-                  min={1}
-                  max={selectedClinicStock?.quantity || 1}
+                  min="1"
+                  max={selectedClinicStock?.quantity || 10}
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  helperText={
-                    selectedClinicStock
-                      ? `Max available at this pharmacy: ${selectedClinicStock.quantity} units`
-                      : ''
-                  }
+                  className="w-full rounded-lg border border-slate-200 p-2.5 bg-white focus:ring-2 focus:ring-emerald-500"
+                  required
                 />
               </div>
 
-              {/* Delivery / Pickup Option */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                  Fulfillment Method
+                <label className="block font-bold text-slate-700 mb-1">
+                  Fulfillment Mode:
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setDeliveryOption('PICKUP')}
-                    className={`p-3 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
+                    className={`p-3 rounded-xl border flex items-center justify-center gap-2 font-medium transition-all ${
                       deliveryOption === 'PICKUP'
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
-                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                        : 'border-slate-200 hover:bg-slate-50 text-slate-600'
                     }`}
                   >
-                    <ShoppingBag className="w-4 h-4 text-emerald-600" />
+                    <Building2 className="w-4 h-4 text-emerald-600" />
                     <span>Pharmacy Pickup</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setDeliveryOption('HOME_DELIVERY')}
-                    className={`p-3 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
+                    className={`p-3 rounded-xl border flex items-center justify-center gap-2 font-medium transition-all ${
                       deliveryOption === 'HOME_DELIVERY'
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
-                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                        : 'border-slate-200 hover:bg-slate-50 text-slate-600'
                     }`}
                   >
                     <Truck className="w-4 h-4 text-emerald-600" />
@@ -403,7 +427,6 @@ export default function PatientMedicinesPage() {
                 </div>
               </div>
 
-              {/* Notes */}
               <div>
                 <Input
                   label="Prescription Note / Special Instructions (Optional)"
@@ -439,4 +462,3 @@ export default function PatientMedicinesPage() {
     </div>
   );
 }
-

@@ -13,6 +13,8 @@ import {
   Loader2,
   Phone,
   Search,
+  Sparkles,
+  FileText,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +22,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { formatDate, formatTime } from '@/lib/utils';
 import { Appointment } from '@/types';
+import { BackButton } from '@/components/common/BackButton';
+import { DoctorSoapAssistantModal } from '@/components/ai/DoctorSoapAssistantModal';
 
 export default function DoctorAppointmentsPage() {
   const { user } = useAuth();
@@ -30,6 +34,7 @@ export default function DoctorAppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [selectedSoapApt, setSelectedSoapApt] = useState<Appointment | null>(null);
 
   const fetchAppointments = async () => {
     try {
@@ -64,13 +69,13 @@ export default function DoctorAppointmentsPage() {
     };
   }, [socket]);
 
-  const handleStatusUpdate = async (aptId: string, status: string) => {
+  const handleStatusUpdate = async (aptId: string, status: string, notes?: string) => {
     setActionLoading(aptId);
     try {
       const res = await fetch(`/api/appointments/${aptId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, notes }),
       });
       const json = await res.json();
       if (json.success) {
@@ -81,6 +86,11 @@ export default function DoctorAppointmentsPage() {
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const handleApplySoapNotes = async (soapNotesText: string) => {
+    if (!selectedSoapApt) return;
+    await handleStatusUpdate(selectedSoapApt.id, selectedSoapApt.status, soapNotesText);
   };
 
   const handleCheckInPatient = async (apt: Appointment) => {
@@ -102,73 +112,93 @@ export default function DoctorAppointmentsPage() {
     }
   };
 
-  const filteredAppointments = appointments.filter((a) => {
+  const filteredAppointments = appointments.filter((apt) => {
     if (statusFilter === 'ALL') return true;
-    return a.status === statusFilter;
+    return apt.status === statusFilter;
   });
 
+  const getStatusBadgeVariant = (
+    status: string
+  ): 'default' | 'secondary' | 'success' | 'warning' | 'destructive' | 'outline' | 'emergency' => {
+    switch (status) {
+      case 'CONFIRMED':
+        return 'success';
+      case 'CHECKED_IN':
+        return 'default';
+      case 'IN_PROGRESS':
+        return 'secondary';
+      case 'COMPLETED':
+        return 'outline';
+      case 'CANCELLED':
+        return 'destructive';
+      default:
+        return 'default';
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <BackButton fallbackUrl="/doctor" />
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
-            Appointments Management
+            Consultation Schedule & Appointments
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            View consultation schedules, verify check-ins, and manage appointment outcomes.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Manage your daily patient booking calendar, queue check-ins, and AI SOAP documentation.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Input
+        <div className="flex items-center gap-3">
+          <input
             type="date"
-            className="w-40 h-9 text-xs"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
+            className="text-xs rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-subtle focus:ring-2 focus:ring-sky-500"
           />
           {selectedDate && (
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={() => setSelectedDate('')}
-              className="text-xs text-slate-500"
+              className="text-xs text-sky-600 font-medium hover:underline"
             >
               Clear Date
-            </Button>
+            </button>
           )}
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         {['ALL', 'CONFIRMED', 'CHECKED_IN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map(
-          (st) => (
+          (status) => (
             <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                statusFilter === st
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                statusFilter === status
                   ? 'bg-navy-900 text-white shadow-subtle'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              {st.replace('_', ' ')}
+              {status.replace(/_/g, ' ')}
             </button>
           )
         )}
       </div>
 
+      {/* Appointments List */}
       {isLoading ? (
-        <div className="py-16 text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-sky-600 mx-auto" />
-          <p className="text-xs text-slate-500 mt-2">Loading appointments...</p>
+        <div className="flex justify-center p-12">
+          <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
         </div>
       ) : filteredAppointments.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
-          <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-800">No appointments found</h3>
-          <p className="text-xs text-slate-500 mt-1">
-            No consultations match the selected date and status filters.
+          <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+          <h3 className="text-sm font-bold text-slate-700">No appointments found</h3>
+          <p className="text-xs text-slate-400 mt-1">
+            There are no appointments matching the selected date or filter.
           </p>
         </div>
       ) : (
@@ -176,27 +206,16 @@ export default function DoctorAppointmentsPage() {
           {filteredAppointments.map((apt) => (
             <Card
               key={apt.id}
-              className="p-5 border border-slate-200 shadow-card hover:shadow-elevated transition-all"
+              className="p-4 sm:p-5 border border-slate-200 shadow-sm hover:border-slate-300 transition-all bg-white"
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-slate-500">
+                    <span className="text-xs font-mono font-bold text-slate-500">
                       {apt.appointmentNumber}
                     </span>
-                    <Badge
-                      variant={
-                        apt.status === 'CONFIRMED'
-                          ? 'success'
-                          : apt.status === 'CHECKED_IN' || apt.status === 'IN_PROGRESS'
-                          ? 'default'
-                          : apt.status === 'CANCELLED'
-                          ? 'destructive'
-                          : 'secondary'
-                      }
-                      className="text-[10px]"
-                    >
-                      {apt.status}
+                    <Badge variant={getStatusBadgeVariant(apt.status)}>
+                      {apt.status.replace(/_/g, ' ')}
                     </Badge>
                   </div>
 
@@ -226,9 +245,27 @@ export default function DoctorAppointmentsPage() {
                       <strong>Reason:</strong> {apt.reason}
                     </p>
                   )}
+
+                  {apt.notes && (
+                    <div className="text-[11px] text-slate-600 bg-sky-50/70 p-2.5 rounded-lg border border-sky-100 font-sans whitespace-pre-line mt-1">
+                      <strong className="text-sky-900 block mb-0.5">Clinical Notes:</strong>
+                      {apt.notes}
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-2 self-start md:self-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
+                <div className="flex flex-wrap items-center gap-2 self-start md:self-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
+                  {/* AI SOAP Note Generator Button */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectedSoapApt(apt)}
+                    className="text-xs border-sky-300 text-sky-800 hover:bg-sky-50"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-sky-600 mr-1" />
+                    AI SOAP Note
+                  </Button>
+
                   {apt.status === 'CONFIRMED' && !apt.waitingQueueEntry && (
                     <Button
                       size="sm"
@@ -279,7 +316,14 @@ export default function DoctorAppointmentsPage() {
           ))}
         </div>
       )}
+
+      {/* AI SOAP Note Generator Modal */}
+      <DoctorSoapAssistantModal
+        isOpen={!!selectedSoapApt}
+        onClose={() => setSelectedSoapApt(null)}
+        appointment={selectedSoapApt}
+        onApplyNotes={handleApplySoapNotes}
+      />
     </div>
   );
 }
-

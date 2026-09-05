@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { BackButton } from '@/components/common/BackButton';
 import { formatTime, formatDate } from '@/lib/utils';
 import { EmergencyCase, EmergencyStatus } from '@/types';
 
@@ -100,6 +101,8 @@ export default function DoctorEmergencyPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton fallbackUrl="/doctor" />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-xs font-bold uppercase tracking-wider mb-1">

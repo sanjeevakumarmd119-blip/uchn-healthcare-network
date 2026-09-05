@@ -6,6 +6,7 @@ import { SocketProvider } from '@/context/SocketContext';
 import { Navbar } from '@/components/common/Navbar';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 import { InstallPwaPrompt } from '@/components/common/InstallPwaPrompt';
+import { FloatingAIAssistantButton } from '@/components/common/FloatingAIAssistantButton';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { LocationPickerModal } from '@/components/common/LocationPickerModal';
 import { ToastContainer } from '@/components/ui/Toast';
@@ -67,6 +68,7 @@ export default function RootLayout({
               <LocationPickerModal />
               <ToastContainer />
               <main className="flex-1 flex flex-col pb-16 sm:pb-0">{children}</main>
+              <FloatingAIAssistantButton />
               <MobileBottomNav />
               <InstallPwaPrompt />
             </SocketProvider>

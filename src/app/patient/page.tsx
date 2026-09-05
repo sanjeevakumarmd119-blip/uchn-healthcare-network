@@ -17,12 +17,15 @@ import {
   CheckCircle2,
   AlertTriangle,
   Loader2,
+  Sparkles,
+  Bot,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { formatDate, formatTime, getStatusColor } from '@/lib/utils';
 import { Appointment, EmergencyCase, WaitingQueueEntry } from '@/types';
+import { AIHealthAssistantModal } from '@/components/ai/AIHealthAssistantModal';
 
 export default function PatientDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -33,6 +36,7 @@ export default function PatientDashboard() {
   const [activeEmergency, setActiveEmergency] = useState<EmergencyCase | null>(null);
   const [queueEntry, setQueueEntry] = useState<WaitingQueueEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -128,6 +132,34 @@ export default function PatientDashboard() {
         </button>
       </div>
 
+      {/* AI Clinical Triage Hero Card */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-navy-950 via-navy-900 to-sky-950 p-6 sm:p-7 text-white shadow-xl border border-navy-800">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-300 text-[11px] font-bold tracking-wide uppercase">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>AI Clinical Triage Assistant</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Feeling unwell? Check symptoms with AI.
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Describe your symptoms for real-time clinical urgency triage, home care advice, and immediate matching with verified nearby specialists.
+            </p>
+          </div>
+
+          <Button
+            onClick={() => setIsAIModalOpen(true)}
+            className="self-start md:self-auto px-5 py-3 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 text-navy-950 font-bold text-xs sm:text-sm rounded-xl shadow-lg hover:shadow-sky-500/25 transition-all flex items-center gap-2 flex-shrink-0"
+          >
+            <Sparkles className="w-4 h-4 text-navy-950" />
+            <span>Start AI Triage</span>
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
       {/* Active Emergency Banner if in Progress */}
       {activeEmergency && (
         <div className="p-4 sm:p-5 rounded-2xl bg-red-50 border-2 border-red-300 text-red-950 shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 emergency-pulse">
@@ -213,18 +245,18 @@ export default function PatientDashboard() {
                 <Stethoscope className="w-7 h-7" />
               </div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md">
-                Consultations
+                Doctor Consultation
               </span>
               <h3 className="text-2xl font-bold text-navy-950 mt-2 group-hover:text-sky-600 transition-colors">
                 DOCTOR
               </h3>
               <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                Find nearby doctors by specialty, view availability, and book verified consultation appointments with real-time slot locking.
+                Find verified specialists and book lock-protected doctor consultation appointments with live slot schedules.
               </p>
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-sky-700 group-hover:text-sky-800">
-              <span>Find & Book Care</span>
+              <span>Book Doctor Consultation</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </div>
           </Link>
@@ -239,18 +271,18 @@ export default function PatientDashboard() {
                 <Pill className="w-7 h-7" />
               </div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                Pharmacy Stock
+                Pharmacy Reservation
               </span>
               <h3 className="text-2xl font-bold text-navy-950 mt-2 group-hover:text-emerald-600 transition-colors">
                 MEDICINE
               </h3>
               <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                Search essential medicines, check live inventory across local clinics & pharmacies, and request pickup or delivery.
+                Search essential medicine inventory across local clinics & pharmacies, and reserve for pickup or home delivery.
               </p>
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-emerald-700 group-hover:text-emerald-800">
-              <span>Discover & Reserve</span>
+              <span>Reserve Medicines</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </div>
           </Link>
@@ -359,7 +391,12 @@ export default function PatientDashboard() {
           </div>
         )}
       </section>
+
+      {/* AI Health Assistant Modal */}
+      <AIHealthAssistantModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+      />
     </div>
   );
 }
-

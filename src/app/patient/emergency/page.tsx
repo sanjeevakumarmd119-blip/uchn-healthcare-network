@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { Input } from '@/components/ui/Input';
+import { BackButton } from '@/components/common/BackButton';
 import { formatDate, formatTime } from '@/lib/utils';
 import { EmergencyCase, EmergencyStatus } from '@/types';
 
@@ -219,6 +220,8 @@ export default function PatientEmergencyPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <BackButton fallbackUrl="/patient" />
+
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-red-200">
         <div>

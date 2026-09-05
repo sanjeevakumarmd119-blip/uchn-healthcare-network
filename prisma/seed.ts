@@ -573,6 +573,46 @@ async function main() {
   }
   console.log('✅ Created 22 medicines with inventory across 3 clinics, stock transactions, and low-stock alerts');
 
+  // 8b. Seed Patient Medicine Purchase & Dispense Requests
+  const allMeds = await prisma.medicine.findMany({ take: 5 });
+  if (patientProfilesList.length >= 3 && allMeds.length >= 4) {
+    await prisma.medicineRequest.createMany({
+      data: [
+        {
+          patientId: patientProfilesList[0].id, // John Doe
+          medicineId: allMeds[0].id, // Amoxicillin
+          clinicId: clinic1.id,
+          quantity: 2,
+          status: 'DISPENSED',
+          deliveryOption: 'PICKUP',
+          notes: 'Prescribed for acute upper respiratory infection.',
+          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+        },
+        {
+          patientId: patientProfilesList[1].id, // Jane Smith
+          medicineId: allMeds[3].id, // Paracetamol Extra
+          clinicId: clinic1.id,
+          quantity: 1,
+          status: 'READY_FOR_PICKUP',
+          deliveryOption: 'PICKUP',
+          notes: 'Post-consultation symptom relief medication.',
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        },
+        {
+          patientId: patientProfilesList[2].id, // David Kim
+          medicineId: allMeds[1].id, // Azithromycin
+          clinicId: clinic2.id,
+          quantity: 1,
+          status: 'PENDING',
+          deliveryOption: 'HOME_DELIVERY',
+          notes: 'Online prescription reservation.',
+          createdAt: new Date(Date.now() - 45 * 60 * 1000),
+        },
+      ],
+    });
+    console.log('✅ Created initial patient medicine purchase & dispense records');
+  }
+
   // 9. Seed Emergency Cases
   const emergencyPatient1 = patientProfilesList[0]; // John Doe
   const emergencyPatient2 = patientProfilesList[3]; // Maria Garcia

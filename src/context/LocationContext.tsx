@@ -65,7 +65,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const requestCurrentLocation = async () => {
+  const requestCurrentLocation = async (): Promise<void> => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setLocation((prev) => ({
         ...prev,
@@ -77,32 +77,69 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
     setLocation((prev) => ({ ...prev, isDetecting: true, error: null }));
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const newLoc: LocationState = {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          city: 'Current Location (GPS)',
-          isPermissionGranted: true,
-          isDetecting: false,
-          error: null,
-        };
-        setLocation(newLoc);
-        try {
-          localStorage.setItem('uchn_user_location', JSON.stringify(newLoc));
-        } catch {}
-      },
-      (err) => {
-        console.warn('Geolocation access not granted:', err.message);
-        setLocation((prev) => ({
-          ...prev,
-          isPermissionGranted: false,
-          isDetecting: false,
-          error: 'Location permission was denied. You can manually select your location.',
-        }));
-      },
-      { timeout: 10000, enableHighAccuracy: false }
-    );
+    return new Promise<void>((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          let detectedCity = `GPS (${lat.toFixed(3)}°, ${lng.toFixed(3)}°)`;
+
+          try {
+            // Reverse geocode via OpenStreetMap Nominatim with a short timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12`,
+              { signal: controller.signal }
+            );
+            clearTimeout(timeoutId);
+            if (res.ok) {
+              const data = await res.json();
+              const addr = data.address || {};
+              const place =
+                addr.city ||
+                addr.town ||
+                addr.suburb ||
+                addr.village ||
+                addr.county ||
+                addr.state ||
+                data.display_name?.split(',')[0];
+              const stateOrCountry = addr.state || addr.country;
+              if (place) {
+                detectedCity = stateOrCountry ? `${place}, ${stateOrCountry}` : place;
+              }
+            }
+          } catch {
+            // Keep the GPS fallback if reverse geocoding fails or times out
+          }
+
+          const newLoc: LocationState = {
+            latitude: lat,
+            longitude: lng,
+            city: detectedCity,
+            isPermissionGranted: true,
+            isDetecting: false,
+            error: null,
+          };
+          setLocation(newLoc);
+          try {
+            localStorage.setItem('uchn_user_location', JSON.stringify(newLoc));
+          } catch {}
+          resolve();
+        },
+        (err) => {
+          console.warn('Geolocation access not granted or error:', err.message);
+          setLocation((prev) => ({
+            ...prev,
+            isPermissionGranted: false,
+            isDetecting: false,
+            error: 'Location permission was denied or unavailable. You can manually select a city.',
+          }));
+          resolve();
+        },
+        { timeout: 12000, enableHighAccuracy: true, maximumAge: 0 }
+      );
+    });
   };
 
   const setManualLocation = (loc: PresetLocation | { city: string; latitude: number; longitude: number }) => {

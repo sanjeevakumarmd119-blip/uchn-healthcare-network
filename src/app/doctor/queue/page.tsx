@@ -18,6 +18,7 @@ import {
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { BackButton } from '@/components/common/BackButton';
 import { formatTime } from '@/lib/utils';
 import { WaitingQueueEntry } from '@/types';
 
@@ -91,6 +92,8 @@ export default function DoctorQueuePage() {
 
   return (
     <div className="space-y-6">
+      <BackButton fallbackUrl="/doctor" />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">

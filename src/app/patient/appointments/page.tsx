@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { BackButton } from '@/components/common/BackButton';
 import { formatDate, formatTime, getStatusColor } from '@/lib/utils';
 import { Appointment } from '@/types';
 
@@ -101,19 +102,21 @@ export default function PatientAppointmentsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <BackButton fallbackUrl="/patient" />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
-            My Appointments
+            My Doctor Consultations
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Track consultation schedules, check-in for appointments, and review history.
+            Track consultation schedules, check-in for appointments, and review medical history.
           </p>
         </div>
 
         <Link href="/patient/doctors">
           <Button size="sm" className="gap-2 text-xs">
-            <Plus className="w-4 h-4" /> Book New Consultation
+            <Plus className="w-4 h-4" /> Book Doctor Consultation
           </Button>
         </Link>
       </div>

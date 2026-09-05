@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from 'clsx';
+﻿import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -41,6 +41,29 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+/**
+ * Calculates straight-line distance in kilometers between two GPS coordinates
+ * using the Haversine formula.
+ */
+export function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+
 export function getStatusColor(status: string): { bg: string; text: string; border: string } {
   switch (status.toUpperCase()) {
     case 'CONFIRMED':
@@ -72,4 +95,3 @@ export function getStatusColor(status: string): { bg: string; text: string; bord
       return { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' };
   }
 }
-

@@ -17,6 +17,7 @@ import {
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { BackButton } from '@/components/common/BackButton';
 import { WaitingQueueEntry } from '@/types';
 import Link from 'next/link';
 
@@ -79,6 +80,8 @@ export default function PatientQueuePage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <BackButton fallbackUrl="/patient" />
+
       <div>
         <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
           Live Clinic Waiting List

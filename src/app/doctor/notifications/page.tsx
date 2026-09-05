@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { formatDate, formatTime } from '@/lib/utils';
 import { NotificationItem } from '@/types';
+import { BackButton } from '@/components/common/BackButton';
 import Link from 'next/link';
 
 export default function DoctorNotificationsPage() {
@@ -57,6 +58,8 @@ export default function DoctorNotificationsPage() {
 
   return (
     <div className="max-w-4xl space-y-6">
+      <BackButton fallbackUrl="/doctor" />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">

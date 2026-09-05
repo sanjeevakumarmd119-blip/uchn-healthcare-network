@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { BackButton } from '@/components/common/BackButton';
 import { formatDate, formatTime, formatCurrency } from '@/lib/utils';
 import { Doctor, Specialty, AppointmentSlot, Appointment } from '@/types';
 
@@ -180,13 +181,15 @@ export default function PatientDoctorsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <BackButton fallbackUrl="/patient" />
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
-          Find Doctors & Book Consultation
+          Find Doctors & Book Doctor Consultation
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Search verified medical practitioners and book lock-protected appointment slots.
+          Search verified medical practitioners and book lock-protected doctor consultation slots.
         </p>
       </div>
 
@@ -320,7 +323,7 @@ export default function PatientDoctorsPage() {
         <Modal
           isOpen={isBookingModalOpen}
           onClose={() => setIsBookingModalOpen(false)}
-          title={`Book Appointment with Dr. ${selectedDoctor.user.firstName} ${selectedDoctor.user.lastName}`}
+          title={`Book Doctor Consultation with Dr. ${selectedDoctor.user.firstName} ${selectedDoctor.user.lastName}`}
           description={`${selectedDoctor.clinic?.name} • ${formatCurrency(selectedDoctor.consultationFee)} consultation fee`}
           maxWidth="lg"
         >
