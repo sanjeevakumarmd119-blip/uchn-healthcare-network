@@ -7,10 +7,15 @@ import {
   Users,
   Clock,
   CheckCircle2,
+  AlertCircle,
   Loader2,
   Phone,
+  UserCheck,
   Stethoscope,
+  ArrowRight,
+  ShieldAlert,
 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -154,6 +159,7 @@ export default function DoctorQueuePage() {
                           variant={
                             isConsulting
                               ? 'success'
+                              : item.triagePriority === 'HIGH' || item.triagePriority === 'CRITICAL'
                               : item.triagePriority === 'URGENT' || item.triagePriority === 'CRITICAL'
                               ? 'emergency'
                               : 'secondary'
