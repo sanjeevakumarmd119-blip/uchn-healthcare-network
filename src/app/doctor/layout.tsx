@@ -4,10 +4,9 @@ import React, { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/common/Sidebar';
-import { Loader2, ShieldAlert, Menu } from 'lucide-react';
+import { Loader2, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAppDownload } from '@/context/AppDownloadContext';
-import Link from 'next/link';
 
 export default function DoctorLayout({
   children,
@@ -17,7 +16,7 @@ export default function DoctorLayout({
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const { isDoctorDrawerOpen, openDoctorDrawer, closeDoctorDrawer } = useAppDownload();
+  const { isDoctorDrawerOpen, closeDoctorDrawer } = useAppDownload();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -60,35 +59,7 @@ export default function DoctorLayout({
   }
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row bg-slate-50 relative min-h-screen">
-      {/* Mobile Clinical Top Bar */}
-      <div className="md:hidden sticky top-16 z-20 bg-navy-950 text-white px-3.5 py-2.5 flex items-center justify-between border-b border-navy-800 shadow-md">
-        <button
-          type="button"
-          onClick={openDoctorDrawer}
-          className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-navy-900 border border-navy-800 text-slate-200 hover:text-white text-xs font-semibold tap-bounce cursor-pointer"
-          aria-label="Open Clinical Operations Menu"
-        >
-          <Menu className="w-4 h-4 text-sky-400" />
-          <span>Menu</span>
-        </button>
-
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[11px] font-bold text-sky-200">
-            {user.role === 'CLINIC_ADMIN' ? 'Clinic Admin' : 'Doctor Portal'}
-          </span>
-        </div>
-
-        <Link
-          href="/doctor/emergency"
-          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-600/90 text-white text-[11px] font-bold emergency-pulse tap-bounce"
-        >
-          <ShieldAlert className="w-3.5 h-3.5" />
-          <span>SOS</span>
-        </Link>
-      </div>
-
+    <div className="flex-1 flex flex-col md:flex-row bg-slate-50 relative min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)]">
       {/* Slide-in Mobile Drawer Overlay */}
       {isDoctorDrawerOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
@@ -110,7 +81,7 @@ export default function DoctorLayout({
       <Sidebar />
 
       {/* Main Page Area */}
-      <div className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl w-full">
+      <div className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl w-full pb-24 md:pb-8">
         {children}
       </div>
     </div>

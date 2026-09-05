@@ -122,19 +122,9 @@ export default function PatientDashboard() {
             {user?.firstName?.charAt(0) || 'P'}
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-lg sm:text-2xl font-extrabold text-navy-950 tracking-tight leading-tight">
-                {getGreeting()}, {user?.firstName}
-              </h1>
-              <button
-                type="button"
-                onClick={openDownloadModal}
-                className="px-1.5 py-0.5 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-700 font-mono text-[10px] font-bold border border-sky-200 transition-colors tap-bounce cursor-pointer"
-                title="Click to view App version & install guide"
-              >
-                v{APP_CONFIG.version}
-              </button>
-            </div>
+            <h1 className="text-lg sm:text-2xl font-extrabold text-navy-950 tracking-tight leading-tight">
+              {getGreeting()}, {user?.firstName}
+            </h1>
             <p className="text-[11px] sm:text-xs text-slate-500">
               Personalized Healthcare Dashboard
             </p>

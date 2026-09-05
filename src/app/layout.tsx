@@ -11,6 +11,7 @@ import { InstallPwaPrompt } from '@/components/common/InstallPwaPrompt';
 import { FloatingAIAssistantButton } from '@/components/common/FloatingAIAssistantButton';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { LocationPickerModal } from '@/components/common/LocationPickerModal';
+import { WebsiteMobileDrawer } from '@/components/common/WebsiteMobileDrawer';
 import { ToastContainer } from '@/components/ui/Toast';
 
 export const viewport: Viewport = {
@@ -75,6 +76,7 @@ export default function RootLayout({
                 <FloatingAIAssistantButton />
                 <MobileBottomNav />
                 <InstallPwaPrompt />
+                <WebsiteMobileDrawer />
               </AppDownloadProvider>
             </SocketProvider>
           </LocationProvider>

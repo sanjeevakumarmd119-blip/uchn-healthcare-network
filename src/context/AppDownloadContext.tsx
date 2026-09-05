@@ -13,6 +13,14 @@ interface AppDownloadContextType {
   openDoctorDrawer: () => void;
   closeDoctorDrawer: () => void;
   toggleDoctorDrawer: () => void;
+  isPatientDrawerOpen: boolean;
+  openPatientDrawer: () => void;
+  closePatientDrawer: () => void;
+  togglePatientDrawer: () => void;
+  isMobileDrawerOpen: boolean;
+  openMobileDrawer: () => void;
+  closeMobileDrawer: () => void;
+  toggleMobileDrawer: () => void;
 }
 
 const AppDownloadContext = createContext<AppDownloadContextType | undefined>(undefined);
@@ -22,6 +30,7 @@ export function AppDownloadProvider({ children }: { children: React.ReactNode })
   const [isAppInstalled, setIsAppInstalled] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isDoctorDrawerOpen, setIsDoctorDrawerOpen] = useState(false);
+  const [isPatientDrawerOpen, setIsPatientDrawerOpen] = useState(false);
 
   useEffect(() => {
     const checkInstallation = () => {
@@ -63,6 +72,27 @@ export function AppDownloadProvider({ children }: { children: React.ReactNode })
   const closeDoctorDrawer = () => setIsDoctorDrawerOpen(false);
   const toggleDoctorDrawer = () => setIsDoctorDrawerOpen((prev) => !prev);
 
+  const openPatientDrawer = () => setIsPatientDrawerOpen(true);
+  const closePatientDrawer = () => setIsPatientDrawerOpen(false);
+  const togglePatientDrawer = () => setIsPatientDrawerOpen((prev) => !prev);
+
+  const openMobileDrawer = () => {
+    setIsPatientDrawerOpen(true);
+    setIsDoctorDrawerOpen(true);
+  };
+
+  const closeMobileDrawer = () => {
+    setIsPatientDrawerOpen(false);
+    setIsDoctorDrawerOpen(false);
+  };
+
+  const toggleMobileDrawer = () => {
+    setIsPatientDrawerOpen((prev) => !prev);
+    setIsDoctorDrawerOpen((prev) => !prev);
+  };
+
+  const isMobileDrawerOpen = isDoctorDrawerOpen || isPatientDrawerOpen;
+
   return (
     <AppDownloadContext.Provider
       value={{
@@ -75,6 +105,14 @@ export function AppDownloadProvider({ children }: { children: React.ReactNode })
         openDoctorDrawer,
         closeDoctorDrawer,
         toggleDoctorDrawer,
+        isPatientDrawerOpen,
+        openPatientDrawer,
+        closePatientDrawer,
+        togglePatientDrawer,
+        isMobileDrawerOpen,
+        openMobileDrawer,
+        closeMobileDrawer,
+        toggleMobileDrawer,
       }}
     >
       {children}
@@ -93,4 +131,3 @@ export function useAppDownload() {
   }
   return context;
 }
-
