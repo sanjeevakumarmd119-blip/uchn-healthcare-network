@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -185,8 +185,8 @@ export default function PatientDoctorsPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-navy-950 tracking-tight">
-          Find Doctors & Book Doctor Consultation
+        <h1 className="text-lg sm:text-2xl font-extrabold text-navy-950 tracking-tight">
+          Find Doctors & Book Consultation
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
           Search verified medical practitioners and book lock-protected doctor consultation slots.
@@ -292,7 +292,9 @@ export default function PatientDoctorsPage() {
                     </span>
                     {doctor.distanceKm !== undefined && doctor.distanceKm !== null && (
                       <span className="font-semibold text-sky-700">
-                        ({doctor.distanceKm} km away)
+                        {doctor.distanceKm < 500
+                          ? `(${doctor.distanceKm} km away)`
+                          : `(${doctor.clinic?.city || 'Healthcare Center'})`}
                       </span>
                     )}
                   </div>
@@ -304,13 +306,14 @@ export default function PatientDoctorsPage() {
                 </div>
               </div>
 
-              <div className="mt-5 pt-3 border-t border-slate-100">
+              <div className="mt-4 pt-3 border-t border-slate-100">
                 <Button
                   onClick={() => openBookingModal(doctor)}
-                  className="w-full text-xs font-semibold"
-                  size="sm"
+                  className="w-full h-10 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white shadow-subtle active:scale-[0.98] transition-all rounded-xl cursor-pointer"
+                  size="md"
                 >
-                  Book Appointment
+                  <Calendar className="w-4 h-4 text-white" />
+                  <span>Book Consultation</span>
                 </Button>
               </div>
             </Card>
