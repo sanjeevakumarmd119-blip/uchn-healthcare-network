@@ -92,11 +92,14 @@ export default function DoctorQueuePage() {
 
   return (
     <div className="space-y-6">
+    <div className="max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
       <BackButton fallbackUrl="/doctor" />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-navy-950 tracking-tight">
             Patient Waiting List & Live Queue
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -105,6 +108,7 @@ export default function DoctorQueuePage() {
         </div>
 
         <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <Badge variant="default" className="text-xs px-3 py-1 font-bold">
             {queue.filter((q) => q.status === 'WAITING').length} Waiting •{' '}
             {queue.filter((q) => q.status === 'IN_CONSULTATION').length} In Consultation
@@ -119,6 +123,7 @@ export default function DoctorQueuePage() {
         </div>
       ) : queue.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
+        <div className="p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
           <Users className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h3 className="text-base font-bold text-slate-800">No patients currently waiting</h3>
           <p className="text-xs text-slate-500 mt-1">
@@ -127,6 +132,7 @@ export default function DoctorQueuePage() {
         </div>
       ) : (
         <div className="space-y-3">
+        <div className="space-y-3 sm:space-y-4">
           {queue.map((item) => {
             const isConsulting = item.status === 'IN_CONSULTATION';
             const waitTime = getWaitTimeMinutes(item.checkInTime);
@@ -135,6 +141,7 @@ export default function DoctorQueuePage() {
               <Card
                 key={item.id}
                 className={`p-5 border transition-all ${
+                className={`p-4 sm:p-5 rounded-2xl border transition-all tap-bounce ${
                   isConsulting
                     ? 'border-emerald-300 bg-emerald-50/40 shadow-card'
                     : 'border-slate-200 bg-white shadow-subtle hover:shadow-card'

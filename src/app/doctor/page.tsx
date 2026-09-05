@@ -23,10 +23,14 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { formatDate, formatTime } from '@/lib/utils';
 import { Appointment, EmergencyCase, WaitingQueueEntry, MedicineInventoryItem } from '@/types';
+import { useAppDownload } from '@/context/AppDownloadContext';
+import { APP_CONFIG } from '@/config/version';
+import { Smartphone, Download } from 'lucide-react';
 
 export default function DoctorDashboardOverview() {
   const { user } = useAuth();
   const { socket } = useSocket();
+  const { openDownloadModal } = useAppDownload();
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [queue, setQueue] = useState<WaitingQueueEntry[]>([]);
@@ -62,7 +66,7 @@ export default function DoctorDashboardOverview() {
         if (d.success) setInventory(d.data.inventory || []);
       }
     } catch (e) {
-      console.error('Doctor overview fetch error', e);
+      console.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +76,7 @@ export default function DoctorDashboardOverview() {
     fetchOverviewData();
   }, []);
 
-  // Real-time synchronization
+  // Real-time multi-socket listening
   useEffect(() => {
     if (!socket) return;
 
@@ -103,26 +107,55 @@ export default function DoctorDashboardOverview() {
 
   return (
     <div className="space-y-8">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-8">
       {/* Welcome Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200/80">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight font-sans">
-            Clinical Operations Overview
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight font-sans">
+              Clinical Operations Overview
+            <h1 className="text-xl sm:text-3xl font-extrabold text-navy-950 tracking-tight font-sans">
+              Clinical Operations
+            </h1>
+            <button
+              type="button"
+              onClick={openDownloadModal}
+              className="px-2 py-0.5 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-700 font-mono text-[11px] font-bold border border-sky-200 transition-colors"
+              className="px-1.5 py-0.2 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-700 font-mono text-[10px] font-bold border border-sky-200 transition-colors"
+              title="Click to view App version & install guide"
+            >
+              v{APP_CONFIG.version}
+            </button>
+          </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
             Logged in as {user?.firstName} {user?.lastName} ({user?.role.replace('_', ' ')})
           </p>
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={openDownloadModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-subtle transition-all"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-subtle transition-all h-9"
+            title="Download & Install UCHN App"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-sky-600" />
+            <span>Install App</span>
+          </button>
+
           <Link href="/doctor/emergency">
             <Button
               variant="emergency"
               size="sm"
               className="text-xs font-bold gap-1.5 shadow-subtle"
+              className="text-xs font-bold gap-1.5 shadow-subtle h-9"
             >
               <ShieldAlert className="w-4 h-4" />
               <span>{emergencies.length} Active Emergencies</span>
+              <span>{emergencies.length} Emergencies</span>
             </Button>
           </Link>
         </div>
@@ -134,30 +167,41 @@ export default function DoctorDashboardOverview() {
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-white text-red-600 flex items-center justify-center flex-shrink-0 shadow-sm animate-pulse">
               <ShieldAlert className="w-7 h-7" />
+        <div className="p-4 sm:p-5 rounded-2xl bg-red-600 text-white shadow-elevated flex flex-col sm:flex-row sm:items-center justify-between gap-3 emergency-pulse">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white text-red-600 flex items-center justify-center flex-shrink-0 shadow-sm animate-pulse">
+              <ShieldAlert className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-extrabold tracking-wider uppercase bg-white/25 px-2 py-0.5 rounded">
                   Critical Emergency Priority
+                <span className="text-[10px] font-extrabold tracking-wider uppercase bg-white/25 px-2 py-0.5 rounded">
+                  Trauma Priority
                 </span>
                 <span className="text-xs font-mono font-bold">
                   {emergencies[0].caseNumber}
                 </span>
               </div>
               <h3 className="text-lg font-bold mt-1">
+              <h3 className="text-sm sm:text-base font-bold mt-0.5">
                 {emergencies[0].emergencyType} ({emergencies[0].severity})
               </h3>
               <p className="text-xs text-red-100 mt-0.5">
                 Patient: {emergencies[0].patient?.user.firstName} {emergencies[0].patient?.user.lastName} • {emergencies[0].address || 'Current Coordinates'}
+              <p className="text-[11px] text-red-100 mt-0.5">
+                {emergencies[0].patient?.user.firstName} {emergencies[0].patient?.user.lastName} • {emergencies[0].address || 'GPS Coordinates'}
               </p>
             </div>
           </div>
 
           <Link href="/doctor/emergency">
+          <Link href="/doctor/emergency" className="w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               className="bg-white text-red-700 hover:bg-red-50 border-white font-bold text-xs shadow-sm w-full sm:w-auto"
+              className="bg-white text-red-700 hover:bg-red-50 border-white font-bold text-xs shadow-sm w-full sm:w-auto h-9"
             >
               Open Emergency Queue
             </Button>
@@ -167,20 +211,30 @@ export default function DoctorDashboardOverview() {
 
       {/* 4 Primary Operational Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 4 Primary Operational Metrics (2x2 Grid on Mobile / 4-Col on Desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Today's Appointments */}
         <Link href="/doctor/appointments" className="block group">
           <Card className="p-5 border border-slate-200 shadow-card hover:border-sky-300 hover:shadow-md transition-all cursor-pointer">
+        <Link href="/doctor/appointments" className="block group tap-bounce">
+          <Card className="p-3.5 sm:p-5 border border-slate-200/90 shadow-card hover:border-sky-400 hover:shadow-md transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-sky-700 transition-colors">
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-sky-700 transition-colors">
                 Appointments
               </span>
               <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
                 <Calendar className="w-5 h-5" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
             </div>
             <div className="mt-3">
               <span className="text-3xl font-black text-slate-900">{appointments.length}</span>
               <span className="text-xs text-slate-500 block mt-0.5">Scheduled today →</span>
+            <div className="mt-2 sm:mt-3">
+              <span className="text-2xl sm:text-3xl font-black text-slate-900">{appointments.length}</span>
+              <span className="text-[10px] sm:text-xs text-slate-500 block mt-0.5">Today&apos;s schedule →</span>
             </div>
           </Card>
         </Link>
@@ -188,17 +242,25 @@ export default function DoctorDashboardOverview() {
         {/* Waiting Patients */}
         <Link href="/doctor/queue" className="block group">
           <Card className="p-5 border border-slate-200 shadow-card hover:border-blue-300 hover:shadow-md transition-all cursor-pointer">
+        <Link href="/doctor/queue" className="block group tap-bounce">
+          <Card className="p-3.5 sm:p-5 border border-slate-200/90 shadow-card hover:border-blue-400 hover:shadow-md transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-blue-700 transition-colors">
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-blue-700 transition-colors">
                 Waiting Queue
               </span>
               <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
                 <Users className="w-5 h-5" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
             </div>
             <div className="mt-3">
               <span className="text-3xl font-black text-blue-700">{queue.length}</span>
               <span className="text-xs text-slate-500 block mt-0.5">In waiting room →</span>
+            <div className="mt-2 sm:mt-3">
+              <span className="text-2xl sm:text-3xl font-black text-blue-700">{queue.length}</span>
+              <span className="text-[10px] sm:text-xs text-slate-500 block mt-0.5">In waiting room →</span>
             </div>
           </Card>
         </Link>
@@ -206,17 +268,25 @@ export default function DoctorDashboardOverview() {
         {/* Active Emergencies */}
         <Link href="/doctor/emergency" className="block group">
           <Card className="p-5 border border-red-200 bg-red-50/30 shadow-card hover:border-red-400 hover:shadow-md transition-all cursor-pointer">
+        <Link href="/doctor/emergency" className="block group tap-bounce">
+          <Card className="p-3.5 sm:p-5 border border-red-200 bg-red-50/40 shadow-card hover:border-red-400 hover:shadow-md transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-red-800 uppercase tracking-wider group-hover:text-red-900 transition-colors">
+              <span className="text-[10px] sm:text-xs font-semibold text-red-800 uppercase tracking-wider group-hover:text-red-900 transition-colors">
                 Emergencies
               </span>
               <div className="w-9 h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
                 <ShieldAlert className="w-5 h-5" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-red-100 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+                <ShieldAlert className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
             </div>
             <div className="mt-3">
               <span className="text-3xl font-black text-red-600">{emergencies.length}</span>
               <span className="text-xs text-red-800/70 block mt-0.5">Active cases →</span>
+            <div className="mt-2 sm:mt-3">
+              <span className="text-2xl sm:text-3xl font-black text-red-600">{emergencies.length}</span>
+              <span className="text-[10px] sm:text-xs text-red-800/70 block mt-0.5">Critical SOS →</span>
             </div>
           </Card>
         </Link>
@@ -224,17 +294,26 @@ export default function DoctorDashboardOverview() {
         {/* Low Stock Medicines */}
         <Link href="/doctor/inventory" className="block group">
           <Card className="p-5 border border-amber-200 bg-amber-50/30 shadow-card hover:border-amber-400 hover:shadow-md transition-all cursor-pointer">
+        <Link href="/doctor/inventory" className="block group tap-bounce">
+          <Card className="p-3.5 sm:p-5 border border-amber-200 bg-amber-50/40 shadow-card hover:border-amber-400 hover:shadow-md transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider group-hover:text-amber-900 transition-colors">
                 Low Stock Alert
+              <span className="text-[10px] sm:text-xs font-semibold text-amber-800 uppercase tracking-wider group-hover:text-amber-900 transition-colors">
+                Low Stock
               </span>
               <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
                 <Pill className="w-5 h-5" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                <Pill className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
             </div>
             <div className="mt-3">
               <span className="text-3xl font-black text-amber-700">{lowStockCount}</span>
               <span className="text-xs text-amber-800/70 block mt-0.5">Requiring restock →</span>
+            <div className="mt-2 sm:mt-3">
+              <span className="text-2xl sm:text-3xl font-black text-amber-700">{lowStockCount}</span>
+              <span className="text-[10px] sm:text-xs text-amber-800/70 block mt-0.5">Replenish items →</span>
             </div>
           </Card>
         </Link>

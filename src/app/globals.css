@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -61,3 +61,20 @@
 .emergency-pulse {
   animation: emergencyPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Hide scrollbar for mobile swipeable containers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tap-bounce {
+  transition: transform 0.15s ease-out;
+}
+.tap-bounce:active {
+  transform: scale(0.97);
+}
+

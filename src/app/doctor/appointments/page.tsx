@@ -138,30 +138,37 @@ export default function DoctorAppointmentsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
       <BackButton fallbackUrl="/doctor" />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-navy-950 tracking-tight">
             Consultation Schedule & Appointments
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             Manage your daily patient booking calendar, queue check-ins, and AI SOAP documentation.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
             className="text-xs rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-subtle focus:ring-2 focus:ring-sky-500"
+            className="text-xs rounded-xl border border-slate-200 bg-white p-2 text-slate-700 shadow-subtle focus:ring-2 focus:ring-sky-500 tap-bounce"
           />
           {selectedDate && (
             <button
               onClick={() => setSelectedDate('')}
               className="text-xs text-sky-600 font-medium hover:underline"
+              className="text-xs text-sky-600 font-semibold hover:underline tap-bounce cursor-pointer"
             >
               Clear Date
             </button>
@@ -171,12 +178,14 @@ export default function DoctorAppointmentsPage() {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
         {['ALL', 'CONFIRMED', 'CHECKED_IN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map(
           (status) => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all tap-bounce cursor-pointer ${
                 statusFilter === status
                   ? 'bg-navy-900 text-white shadow-subtle'
                   : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -195,6 +204,7 @@ export default function DoctorAppointmentsPage() {
         </div>
       ) : filteredAppointments.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
+        <div className="p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
           <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-2" />
           <h3 className="text-sm font-bold text-slate-700">No appointments found</h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -203,10 +213,12 @@ export default function DoctorAppointmentsPage() {
         </div>
       ) : (
         <div className="space-y-3">
+        <div className="space-y-3 sm:space-y-4">
           {filteredAppointments.map((apt) => (
             <Card
               key={apt.id}
               className="p-4 sm:p-5 border border-slate-200 shadow-sm hover:border-slate-300 transition-all bg-white"
+              className="p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-slate-300 transition-all bg-white tap-bounce"
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1.5 flex-1">

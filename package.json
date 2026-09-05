@@ -1,6 +1,6 @@
 {
   "name": "uchn-unified-care-health-network",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "UCHN — Unified Care & Health Network. Full-stack healthcare coordination platform.",
   "scripts": {

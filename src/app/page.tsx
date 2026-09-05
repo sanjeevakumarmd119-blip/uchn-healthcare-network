@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useLocation } from '@/context/LocationContext';
+import { useAppDownload } from '@/context/AppDownloadContext';
+import { APP_CONFIG } from '@/config/version';
 import {
   UserRound,
   Stethoscope,
@@ -15,12 +17,15 @@ import {
   MapPin,
   Sparkles,
   CheckCircle2,
+  Smartphone,
+  Download,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function HomePage() {
   const { user } = useAuth();
   const { location, openLocationModal } = useLocation();
+  const { openDownloadModal } = useAppDownload();
 
   return (
     <div className="flex-1 flex flex-col">
@@ -40,9 +45,21 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="relative py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-200 bg-sky-50 text-sky-700 text-xs font-medium mb-6">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Unified Care & Health Network (UCHN)</span>
+        <div className="flex flex-wrap items-center justify-center gap-2.5 mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-200 bg-sky-50 text-sky-700 text-xs font-medium">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Unified Care & Health Network (UCHN)</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={openDownloadModal}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold shadow-subtle transition-all cursor-pointer"
+            title="Download and install UCHN as a mobile/desktop app"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Install App (v{APP_CONFIG.version})</span>
+          </button>
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-navy-950 font-sans leading-[1.15]">

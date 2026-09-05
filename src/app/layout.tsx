@@ -1,9 +1,11 @@
-﻿import type { Metadata, Viewport } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { LocationProvider } from '@/context/LocationContext';
 import { SocketProvider } from '@/context/SocketContext';
+import { AppDownloadProvider } from '@/context/AppDownloadContext';
 import { Navbar } from '@/components/common/Navbar';
+import { Footer } from '@/components/common/Footer';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 import { InstallPwaPrompt } from '@/components/common/InstallPwaPrompt';
 import { FloatingAIAssistantButton } from '@/components/common/FloatingAIAssistantButton';
@@ -63,14 +65,17 @@ export default function RootLayout({
         <AuthProvider>
           <LocationProvider>
             <SocketProvider>
-              <ServiceWorkerRegister />
-              <Navbar />
-              <LocationPickerModal />
-              <ToastContainer />
-              <main className="flex-1 flex flex-col pb-16 sm:pb-0">{children}</main>
-              <FloatingAIAssistantButton />
-              <MobileBottomNav />
-              <InstallPwaPrompt />
+              <AppDownloadProvider>
+                <ServiceWorkerRegister />
+                <Navbar />
+                <LocationPickerModal />
+                <ToastContainer />
+                <main className="flex-1 flex flex-col pb-16 sm:pb-0">{children}</main>
+                <Footer />
+                <FloatingAIAssistantButton />
+                <MobileBottomNav />
+                <InstallPwaPrompt />
+              </AppDownloadProvider>
             </SocketProvider>
           </LocationProvider>
         </AuthProvider>

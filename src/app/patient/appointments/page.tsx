@@ -102,11 +102,14 @@ export default function PatientAppointmentsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
       <BackButton fallbackUrl="/patient" />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-navy-950 tracking-tight">
             My Doctor Consultations
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -116,6 +119,8 @@ export default function PatientAppointmentsPage() {
 
         <Link href="/patient/doctors">
           <Button size="sm" className="gap-2 text-xs">
+        <Link href="/patient/doctors" className="w-full sm:w-auto">
+          <Button size="sm" className="w-full sm:w-auto gap-2 text-xs tap-bounce">
             <Plus className="w-4 h-4" /> Book Doctor Consultation
           </Button>
         </Link>
@@ -123,12 +128,14 @@ export default function PatientAppointmentsPage() {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
         {['ALL', 'CONFIRMED', 'CHECKED_IN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map(
           (status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all tap-bounce cursor-pointer ${
                 filter === status
                   ? 'bg-navy-900 text-white shadow-subtle'
                   : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -148,6 +155,7 @@ export default function PatientAppointmentsPage() {
         </div>
       ) : filteredAppointments.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
+        <div className="p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
           <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h3 className="text-base font-bold text-slate-800">No appointments found</h3>
           <p className="text-xs text-slate-500 mt-1">
@@ -158,6 +166,7 @@ export default function PatientAppointmentsPage() {
         </div>
       ) : (
         <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {filteredAppointments.map((apt) => {
             const isToday =
               new Date(apt.appointmentDate).toDateString() === new Date().toDateString();
@@ -169,6 +178,7 @@ export default function PatientAppointmentsPage() {
               <Card
                 key={apt.id}
                 className="p-6 border border-slate-200 shadow-card hover:shadow-elevated transition-all"
+                className="p-4 sm:p-6 rounded-2xl border border-slate-200/90 shadow-card hover:shadow-elevated transition-all tap-bounce"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-2">
@@ -200,6 +210,7 @@ export default function PatientAppointmentsPage() {
                     </p>
 
                     <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-700 pt-1">
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-medium text-slate-700 pt-1">
                       <div className="flex items-center gap-1.5 text-sky-700">
                         <Calendar className="w-3.5 h-3.5" />
                         <span>{formatDate(apt.appointmentDate)}</span>
@@ -212,6 +223,7 @@ export default function PatientAppointmentsPage() {
 
                     {apt.reason && (
                       <p className="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg mt-2">
+                      <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl mt-2 border border-slate-100">
                         <strong>Reason:</strong> {apt.reason}
                       </p>
                     )}
@@ -219,12 +231,14 @@ export default function PatientAppointmentsPage() {
 
                   {/* Actions */}
                   <div className="flex flex-col sm:flex-row items-center gap-2 self-start sm:self-auto">
+                  <div className="flex flex-row sm:flex-col items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                     {canCheckIn && (
                       <Button
                         size="sm"
                         onClick={() => handleCheckIn(apt)}
                         isLoading={actionLoading === apt.id}
                         className="w-full sm:w-auto text-xs bg-emerald-600 hover:bg-emerald-700"
+                        className="flex-1 sm:flex-none sm:w-auto text-xs bg-emerald-600 hover:bg-emerald-700 tap-bounce"
                       >
                         Self Check-In
                       </Button>
@@ -232,10 +246,12 @@ export default function PatientAppointmentsPage() {
 
                     {apt.waitingQueueEntry && (
                       <Link href="/patient/queue" className="w-full sm:w-auto">
+                      <Link href="/patient/queue" className="flex-1 sm:flex-none sm:w-auto">
                         <Button
                           variant="outline"
                           size="sm"
                           className="w-full sm:w-auto text-xs border-sky-300 text-sky-800"
+                          className="w-full sm:w-auto text-xs border-sky-300 text-sky-800 tap-bounce"
                         >
                           Queue: #{apt.waitingQueueEntry.queueNumber}
                         </Button>
@@ -249,6 +265,7 @@ export default function PatientAppointmentsPage() {
                         onClick={() => handleCancel(apt.id)}
                         isLoading={actionLoading === apt.id}
                         className="w-full sm:w-auto text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                        className="flex-1 sm:flex-none sm:w-auto text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 tap-bounce"
                       >
                         Cancel
                       </Button>

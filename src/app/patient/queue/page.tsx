@@ -80,10 +80,12 @@ export default function PatientQueuePage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-3xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
       <BackButton fallbackUrl="/patient" />
 
       <div>
         <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-black text-navy-950 tracking-tight">
           Live Clinic Waiting List
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -93,9 +95,12 @@ export default function PatientQueuePage() {
 
       {queueEntry ? (
         <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {queueEntry.status === 'IN_CONSULTATION' && (
             <div className="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 shadow-card flex items-center gap-3.5">
               <Sparkles className="w-8 h-8 text-emerald-600 flex-shrink-0 animate-bounce" />
+            <div className="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 shadow-card flex items-center gap-3.5 tap-bounce">
+              <Sparkles className="w-7 h-7 text-emerald-600 flex-shrink-0 animate-bounce" />
               <div>
                 <h4 className="text-sm font-bold text-emerald-900">
                   Doctor Is Ready for You!
@@ -110,9 +115,13 @@ export default function PatientQueuePage() {
           <Card className="border border-slate-200 shadow-card p-6 sm:p-8 text-center space-y-6">
             <div className="w-24 h-24 rounded-3xl bg-sky-50 border border-sky-200 text-sky-700 flex flex-col items-center justify-center mx-auto shadow-subtle">
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <Card className="border border-slate-200/90 shadow-card p-5 sm:p-8 text-center space-y-5 sm:space-y-6 rounded-2xl tap-bounce">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-sky-50 border border-sky-200 text-sky-700 flex flex-col items-center justify-center mx-auto shadow-subtle">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">
                 Queue #
               </span>
               <span className="text-4xl font-black text-sky-700">
+              <span className="text-3xl sm:text-4xl font-black text-sky-700">
                 {queueEntry.queueNumber}
               </span>
             </div>
@@ -131,6 +140,7 @@ export default function PatientQueuePage() {
                 {queueEntry.status.replace('_', ' ')}
               </Badge>
               <h2 className="text-xl font-bold text-slate-900 mt-2">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 mt-2">
                 Dr. {queueEntry.doctor?.user.firstName} {queueEntry.doctor?.user.lastName}
               </h2>
               <p className="text-xs text-slate-500">
@@ -139,27 +149,32 @@ export default function PatientQueuePage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-sm mx-auto p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
               <div>
                 <span className="text-slate-400 block font-medium">Estimated Wait</span>
                 <span className="text-base font-bold text-slate-900 mt-0.5 block">
+                <span className="text-sm sm:text-base font-bold text-slate-900 mt-0.5 block">
                   ~{queueEntry.estimatedWaitMinutes} mins
                 </span>
               </div>
               <div>
                 <span className="text-slate-400 block font-medium">Triage Priority</span>
                 <span className="text-base font-bold text-sky-700 mt-0.5 block">
+                <span className="text-sm sm:text-base font-bold text-sky-700 mt-0.5 block">
                   {queueEntry.triagePriority}
                 </span>
               </div>
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
+            <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
               Please remain near the reception or waiting lobby. Your screen will update automatically as the queue progresses.
             </p>
           </Card>
         </div>
       ) : (
         <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200 space-y-3">
+        <div className="p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200 space-y-3">
           <Users className="w-10 h-10 text-slate-300 mx-auto" />
           <h3 className="text-base font-bold text-slate-800">You are not currently in any waiting list</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -168,6 +183,7 @@ export default function PatientQueuePage() {
           <div className="pt-2">
             <Link href="/patient/appointments">
               <Button size="sm" variant="outline" className="text-xs">
+              <Button size="sm" variant="outline" className="text-xs tap-bounce">
                 Go to Appointments
               </Button>
             </Link>

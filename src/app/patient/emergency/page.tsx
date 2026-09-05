@@ -220,21 +220,25 @@ export default function PatientEmergencyPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-4xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
       <BackButton fallbackUrl="/patient" />
 
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-red-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-red-200">
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-xs font-bold uppercase tracking-wider mb-1">
             <ShieldAlert className="w-3.5 h-3.5 text-red-600" />
             <span>Emergency Care Coordination</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-black text-navy-950 tracking-tight">
             Urgent Medical Response
           </h1>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-subtle">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-subtle self-start sm:self-auto">
           <MapPin className="w-4 h-4 text-red-600" />
           <span>{location.city}</span>
         </div>
@@ -369,10 +373,14 @@ export default function PatientEmergencyPage() {
         <Card className="border-2 border-red-200 bg-red-50/40 p-8 text-center space-y-6 shadow-card">
           <div className="w-20 h-20 rounded-3xl bg-red-600 text-white flex items-center justify-center mx-auto shadow-elevated emergency-pulse">
             <ShieldAlert className="w-10 h-10" />
+        <Card className="border-2 border-red-200 bg-red-50/40 p-6 sm:p-8 text-center space-y-5 sm:space-y-6 shadow-card rounded-2xl tap-bounce">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-red-600 text-white flex items-center justify-center mx-auto shadow-elevated emergency-pulse">
+            <ShieldAlert className="w-8 h-8 sm:w-10 sm:h-10" />
           </div>
 
           <div className="max-w-md mx-auto space-y-2">
             <h2 className="text-2xl font-bold text-red-950">
+            <h2 className="text-xl sm:text-2xl font-black text-red-950">
               Need Immediate Emergency Assistance?
             </h2>
             <p className="text-xs sm:text-sm text-red-900/80 leading-relaxed">
@@ -386,12 +394,14 @@ export default function PatientEmergencyPage() {
               size="lg"
               onClick={() => setIsConfirmModalOpen(true)}
               className="px-8 py-4 text-base font-bold shadow-elevated"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-black shadow-elevated tap-bounce cursor-pointer"
             >
               REQUEST EMERGENCY ASSISTANCE NOW
             </Button>
           </div>
 
           <div className="pt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+          <div className="pt-2 sm:pt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
             <PhoneCall className="w-4 h-4 text-red-600" />
             <span>24/7 Direct Trauma Helpline: <strong>+1 (415) 911-0100</strong></span>
           </div>
