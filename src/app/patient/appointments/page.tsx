@@ -212,7 +212,6 @@ export default function PatientAppointmentsPage() {
                         Dr. {apt.doctor?.user?.firstName} {apt.doctor?.user?.lastName}
                       </h3>
                       <p className="text-xs text-sky-700 font-semibold">
-                        {apt.doctor?.specialty} • {apt.clinic?.name}
                         {apt.doctor?.doctorSpecialties?.[0]?.specialty?.name || 'General Practitioner'} • {apt.clinic?.name}
                       </p>
                     </div>
