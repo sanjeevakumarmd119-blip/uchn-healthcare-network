@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -147,19 +147,15 @@ export default function PatientMedicinesPage() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
     <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-6">
       <BackButton fallbackUrl="/patient" />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
           <h1 className="text-xl sm:text-2xl font-extrabold text-navy-950 tracking-tight">
             Pharmacy Medicine Reservation & Discovery
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             Search real-time clinical pharmacy inventory and place a pharmacy medicine reservation for pickup or home delivery.
           </p>
@@ -167,8 +163,7 @@ export default function PatientMedicinesPage() {
 
         <Button
           onClick={() => setIsAIScannerOpen(true)}
-          className="self-start sm:self-auto bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-md flex items-center gap-2 flex-shrink-0"
-          className="self-start sm:self-auto bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-2 flex-shrink-0 h-9"
+          className="self-start sm:self-auto bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-2 flex-shrink-0 h-9 tap-bounce"
         >
           <Sparkles className="w-4 h-4 text-emerald-200" />
           <span>AI Prescription Scanner</span>
@@ -176,32 +171,26 @@ export default function PatientMedicinesPage() {
       </div>
 
       {/* Search & Category Filter */}
-      <div className="space-y-4">
       <div className="space-y-3">
         <form onSubmit={handleSearch} className="flex gap-2">
           <div className="flex-1">
             <Input
-              placeholder="Search by brand name, generic formula (e.g., Amoxicillin), or category..."
               placeholder="Search medicine name, generic formula (e.g. Paracetamol)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               icon={<Search className="w-4 h-4 text-slate-400" />}
             />
           </div>
-          <Button type="submit" size="md">
-          <Button type="submit" size="md" className="h-10 px-4 text-xs font-semibold">
+          <Button type="submit" size="md" className="h-10 px-4 text-xs font-semibold tap-bounce">
             Search
           </Button>
         </form>
 
-        {/* Category Filter Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         {/* Category Filter Chips with smooth touch scrolling */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar scrollbar-none -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
           <button
             onClick={() => setSelectedCategory('ALL')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all tap-bounce ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all tap-bounce cursor-pointer ${
               selectedCategory === 'ALL'
                 ? 'bg-navy-900 text-white shadow-subtle'
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -213,8 +202,7 @@ export default function PatientMedicinesPage() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all tap-bounce ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all tap-bounce cursor-pointer ${
                 selectedCategory === cat
                   ? 'bg-navy-900 text-white shadow-subtle'
                   : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -232,7 +220,6 @@ export default function PatientMedicinesPage() {
           <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
       ) : medicines.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
         <div className="p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
           <Pill className="w-10 h-10 text-slate-300 mx-auto mb-2" />
           <h3 className="text-sm font-bold text-slate-700">No medicines found</h3>
@@ -241,17 +228,14 @@ export default function PatientMedicinesPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
           {medicines.map((med) => {
             const hasStock = (med.totalStock || 0) > 0;
             return (
               <Card
                 key={med.id}
-                className="flex flex-col justify-between border border-slate-200 shadow-card hover:shadow-elevated transition-all"
-                className="flex flex-col justify-between border border-slate-200/90 rounded-2xl shadow-card hover:shadow-elevated transition-all"
+                className="flex flex-col justify-between border border-slate-200/90 rounded-2xl shadow-card hover:shadow-elevated transition-all tap-bounce"
               >
-                <CardContent className="p-6 space-y-4">
                 <CardContent className="p-4 sm:p-6 space-y-3.5">
                   <div className="flex items-start justify-between gap-2">
                     <div>

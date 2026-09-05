@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -42,14 +42,11 @@ export default function DoctorAuditLogsPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
     <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
       <BackButton fallbackUrl="/doctor" />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
           <h1 className="text-xl sm:text-2xl font-black text-navy-950 tracking-tight">
             Security & Operations Audit Logs
           </h1>
@@ -63,7 +60,6 @@ export default function DoctorAuditLogsPage() {
           size="sm"
           onClick={fetchLogs}
           disabled={isLoading}
-          className="text-xs gap-1.5"
           className="text-xs gap-1.5 self-start sm:self-auto tap-bounce"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -77,12 +73,12 @@ export default function DoctorAuditLogsPage() {
           <p className="text-xs text-slate-500 mt-2">Loading audit trail...</p>
         </div>
       ) : logs.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
+        <div className="p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
           <Shield className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h3 className="text-base font-bold text-slate-800">No audit logs recorded yet</h3>
         </div>
       ) : (
-        <Card className="border border-slate-200 shadow-card overflow-hidden">
+        <Card className="border border-slate-200 shadow-card overflow-hidden rounded-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
@@ -124,4 +120,3 @@ export default function DoctorAuditLogsPage() {
     </div>
   );
 }
-

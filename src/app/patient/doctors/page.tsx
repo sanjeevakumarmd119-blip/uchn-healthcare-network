@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -180,49 +180,40 @@ export default function PatientDoctorsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
     <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-6">
       <BackButton fallbackUrl="/patient" />
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
         <h1 className="text-xl sm:text-2xl font-extrabold text-navy-950 tracking-tight">
           Find Doctors & Book Doctor Consultation
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
           Search verified medical practitioners and book lock-protected doctor consultation slots.
         </p>
       </div>
 
       {/* Search & Specialty Filter */}
-      <div className="space-y-4">
       <div className="space-y-3">
         <form onSubmit={handleSearchSubmit} className="flex gap-2">
           <div className="flex-1">
             <Input
-              placeholder="Search by doctor name, condition, or clinic..."
               placeholder="Search doctor, specialty, or clinic..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               icon={<Search className="w-4 h-4 text-slate-400" />}
             />
           </div>
-          <Button type="submit" size="md">
-          <Button type="submit" size="md" className="h-10 px-4 text-xs font-semibold">
+          <Button type="submit" size="md" className="h-10 px-4 text-xs font-semibold tap-bounce">
             Search
           </Button>
         </form>
 
-        {/* Specialty Filter Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         {/* Specialty Filter Chips with smooth touch scrolling */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar scrollbar-none -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
           <button
             onClick={() => setSelectedSpecialty('ALL')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all tap-bounce ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all tap-bounce cursor-pointer ${
               selectedSpecialty === 'ALL'
                 ? 'bg-navy-900 text-white shadow-subtle'
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -234,8 +225,7 @@ export default function PatientDoctorsPage() {
             <button
               key={spec.id}
               onClick={() => setSelectedSpecialty(spec.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all tap-bounce ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all tap-bounce cursor-pointer ${
                 selectedSpecialty === spec.id
                   ? 'bg-sky-600 text-white shadow-subtle'
                   : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -254,7 +244,6 @@ export default function PatientDoctorsPage() {
           <p className="text-xs text-slate-500 mt-3">Locating nearby medical practitioners...</p>
         </div>
       ) : doctors.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
         <div className="p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
           <Stethoscope className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h3 className="text-base font-bold text-slate-800">No doctors found</h3>
@@ -263,13 +252,11 @@ export default function PatientDoctorsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
           {doctors.map((doctor) => (
             <Card
               key={doctor.id}
-              className="p-6 border border-slate-200 shadow-card hover:shadow-elevated transition-all flex flex-col justify-between"
-              className="p-4 sm:p-6 border border-slate-200/90 rounded-2xl shadow-card hover:shadow-elevated transition-all flex flex-col justify-between"
+              className="p-4 sm:p-6 border border-slate-200/90 rounded-2xl shadow-card hover:shadow-elevated transition-all flex flex-col justify-between tap-bounce"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-3">

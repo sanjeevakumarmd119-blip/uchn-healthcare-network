@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -100,18 +100,15 @@ export default function DoctorEmergencyPage() {
   };
 
   return (
-    <div className="space-y-6">
     <div className="max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
       <BackButton fallbackUrl="/doctor" />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-xs font-bold uppercase tracking-wider mb-1">
             <ShieldAlert className="w-3.5 h-3.5 text-red-600 animate-pulse" />
             <span>Highest Operational Priority</span>
           </div>
-          <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
           <h1 className="text-xl sm:text-2xl font-black text-navy-950 tracking-tight">
             Emergency Cases Queue
           </h1>
@@ -120,7 +117,6 @@ export default function DoctorEmergencyPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <Badge variant="emergency" className="text-xs px-3 py-1 font-bold">
             {emergencies.length} Active Emergency Cases
@@ -134,7 +130,6 @@ export default function DoctorEmergencyPage() {
           <p className="text-xs text-slate-500 mt-2">Loading emergency queue...</p>
         </div>
       ) : emergencies.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
         <div className="p-8 sm:p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
           <ShieldAlert className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h3 className="text-base font-bold text-slate-800">No active emergency cases</h3>
@@ -143,7 +138,6 @@ export default function DoctorEmergencyPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
         <div className="space-y-3 sm:space-y-4">
           {emergencies.map((emg) => {
             const isPending = emg.status === 'PENDING';
@@ -154,7 +148,7 @@ export default function DoctorEmergencyPage() {
             return (
               <Card
                 key={emg.id}
-                className="border-2 border-red-300 bg-white shadow-card hover:shadow-elevated transition-all overflow-hidden"
+                className="border-2 border-red-300 bg-white shadow-card hover:shadow-elevated transition-all overflow-hidden rounded-2xl"
               >
                 <div className="p-4 bg-red-50/80 border-b border-red-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2.5">
@@ -347,4 +341,3 @@ export default function DoctorEmergencyPage() {
     </div>
   );
 }
-

@@ -246,16 +246,12 @@ export default function DoctorInventoryPage() {
   );
 
   return (
-    <div className="space-y-6">
     <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
       {/* Top Header with Back Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pb-3 border-b border-slate-200">
         <div className="flex items-center gap-3">
           <BackButton fallbackUrl="/doctor" />
           <div>
-            <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
-              Pharmacy Inventory & Patient Dispense Control
             <h1 className="text-xl sm:text-2xl font-black text-navy-950 tracking-tight">
               Pharmacy Inventory & Dispense Control
             </h1>
@@ -266,7 +262,6 @@ export default function DoctorInventoryPage() {
         </div>
 
         {lowStockItems.length > 0 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold self-start sm:self-auto">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold self-start sm:self-auto tap-bounce">
             <AlertTriangle className="w-4 h-4 text-amber-600" />
             <span>{lowStockItems.length} Low/Out-of-Stock Alerts</span>
@@ -275,11 +270,9 @@ export default function DoctorInventoryPage() {
       </div>
 
       {/* Primary Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
         <button
           onClick={() => setActiveTab('STOCK')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
           className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all tap-bounce cursor-pointer ${
             activeTab === 'STOCK'
               ? 'bg-navy-900 text-white shadow-md'
@@ -292,7 +285,6 @@ export default function DoctorInventoryPage() {
 
         <button
           onClick={() => setActiveTab('PURCHASES')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
           className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all tap-bounce cursor-pointer ${
             activeTab === 'PURCHASES'
               ? 'bg-navy-900 text-white shadow-md'
@@ -300,7 +292,6 @@ export default function DoctorInventoryPage() {
           }`}
         >
           <ShoppingBag className="w-4 h-4" />
-          <span>Patient Purchase & Dispense Records</span>
           <span>Patient Purchases & Dispenses</span>
           {purchases.filter((p) => p.status === 'PENDING' || p.status === 'READY_FOR_PICKUP').length > 0 && (
             <span className="w-2 h-2 rounded-full bg-amber-400" />

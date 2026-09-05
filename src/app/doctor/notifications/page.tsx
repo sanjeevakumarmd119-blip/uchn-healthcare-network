@@ -57,14 +57,11 @@ export default function DoctorNotificationsPage() {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="max-w-4xl space-y-6">
     <div className="max-w-4xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
       <BackButton fallbackUrl="/doctor" />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">
           <h1 className="text-xl sm:text-2xl font-black text-navy-950 tracking-tight">
             Notifications Center
           </h1>
@@ -78,7 +75,6 @@ export default function DoctorNotificationsPage() {
             variant="outline"
             size="sm"
             onClick={markAllAsRead}
-            className="text-xs text-sky-700"
             className="text-xs text-sky-700 self-start sm:self-auto tap-bounce"
           >
             Mark all {unreadCount} as read
