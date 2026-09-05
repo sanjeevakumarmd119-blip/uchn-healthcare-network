@@ -9,7 +9,6 @@ import { APP_CONFIG } from '@/config/version';
 import {
   UserRound,
   Stethoscope,
-  Hospital,
   ShieldAlert,
   CalendarCheck,
   Pill,
@@ -18,14 +17,12 @@ import {
   Sparkles,
   CheckCircle2,
   Smartphone,
-  Download,
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 
 export default function HomePage() {
   const { user } = useAuth();
   const { location, openLocationModal } = useLocation();
-  const { openDownloadModal } = useAppDownload();
+  const { openDownloadModal, isAppInstalled } = useAppDownload();
 
   return (
     <div className="flex-1 flex flex-col">
@@ -51,15 +48,21 @@ export default function HomePage() {
             <span>Unified Care & Health Network (UCHN)</span>
           </div>
 
-          <button
-            type="button"
-            onClick={openDownloadModal}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold shadow-subtle transition-all cursor-pointer"
-            title="Download and install UCHN as a mobile/desktop app"
-          >
-            <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Install App (v{APP_CONFIG.version})</span>
-          </button>
+          {!isAppInstalled ? (
+            <button
+              type="button"
+              onClick={openDownloadModal}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold shadow-subtle transition-all cursor-pointer tap-bounce"
+              title="Download and install UCHN as a mobile/desktop app"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Install App (v{APP_CONFIG.version})</span>
+            </button>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-sky-200 bg-sky-50 text-sky-700 text-xs font-semibold font-mono">
+              <span>v{APP_CONFIG.version} Active</span>
+            </div>
+          )}
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-navy-950 font-sans leading-[1.15]">
@@ -89,7 +92,7 @@ export default function HomePage() {
             {/* Patient Option */}
             <Link
               href={user?.role === 'PATIENT' ? '/patient' : '/login?role=PATIENT'}
-              className="group relative flex flex-col p-6 rounded-xl border-2 border-slate-200 bg-slate-50/50 hover:bg-white hover:border-sky-500 transition-all shadow-subtle hover:shadow-card"
+              className="group relative flex flex-col p-6 rounded-xl border-2 border-slate-200 bg-slate-50/50 hover:bg-white hover:border-sky-500 transition-all shadow-subtle hover:shadow-card tap-bounce"
             >
               <div className="w-12 h-12 rounded-xl bg-sky-100 text-sky-700 group-hover:bg-sky-600 group-hover:text-white flex items-center justify-center mb-4 transition-colors">
                 <UserRound className="w-6 h-6" />
@@ -113,7 +116,7 @@ export default function HomePage() {
                   ? '/doctor'
                   : '/login?role=DOCTOR'
               }
-              className="group relative flex flex-col p-6 rounded-xl border-2 border-slate-200 bg-slate-50/50 hover:bg-white hover:border-navy-700 transition-all shadow-subtle hover:shadow-card"
+              className="group relative flex flex-col p-6 rounded-xl border-2 border-slate-200 bg-slate-50/50 hover:bg-white hover:border-navy-700 transition-all shadow-subtle hover:shadow-card tap-bounce"
             >
               <div className="w-12 h-12 rounded-xl bg-navy-100 text-navy-800 group-hover:bg-navy-800 group-hover:text-white flex items-center justify-center mb-4 transition-colors">
                 <Stethoscope className="w-6 h-6" />
@@ -230,4 +233,3 @@ export default function HomePage() {
     </div>
   );
 }
-

@@ -24,7 +24,7 @@ import { APP_CONFIG } from '@/config/version';
 export default function DoctorDashboardOverview() {
   const { user } = useAuth();
   const { socket } = useSocket();
-  const { openDownloadModal } = useAppDownload();
+  const { openDownloadModal, isAppInstalled } = useAppDownload();
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [queue, setQueue] = useState<WaitingQueueEntry[]>([]);
@@ -123,15 +123,17 @@ export default function DoctorDashboardOverview() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={openDownloadModal}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-subtle transition-all h-9 tap-bounce cursor-pointer"
-            title="Download & Install UCHN App"
-          >
-            <Smartphone className="w-3.5 h-3.5 text-sky-600" />
-            <span>Install App</span>
-          </button>
+          {!isAppInstalled && (
+            <button
+              type="button"
+              onClick={openDownloadModal}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-subtle transition-all h-9 tap-bounce cursor-pointer"
+              title="Download & Install UCHN App"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-sky-600" />
+              <span>Install App</span>
+            </button>
+          )}
 
           <Link href="/doctor/emergency">
             <Button

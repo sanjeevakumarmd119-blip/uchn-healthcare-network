@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -15,7 +15,6 @@ import {
   ArrowRight,
   UserCheck,
   CheckCircle2,
-  AlertTriangle,
   Loader2,
   Sparkles,
   Download,
@@ -33,7 +32,7 @@ import { APP_CONFIG } from '@/config/version';
 export default function PatientDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { location, openLocationModal } = useLocation();
-  const { openDownloadModal } = useAppDownload();
+  const { openDownloadModal, isAppInstalled } = useAppDownload();
   const router = useRouter();
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -199,244 +198,214 @@ export default function PatientDashboard() {
               <h4 className="text-xs sm:text-sm font-bold text-slate-900 mt-0.5">
                 Case {activeEmergency.caseNumber}: {activeEmergency.emergencyType}
               </h4>
-              <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5">
-                {activeEmergency.ambulanceId
-                  ? `Ambulance unit ${activeEmergency.ambulanceId} dispatched to your location.`
-                  : 'Emergency response team reviewing your coordinates.'}
+              <p className="text-[11px] text-slate-500">
+                Clinic dispatched: {activeEmergency.clinic?.name || 'Nearest Available Trauma Unit'}
               </p>
             </div>
           </div>
 
           <Link href="/patient/emergency" className="w-full sm:w-auto">
-            <Button size="sm" className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white text-xs h-9 tap-bounce">
-              Live Emergency Timeline
+            <Button variant="emergency" size="sm" className="w-full sm:w-auto text-xs font-bold shadow-sm tap-bounce">
+              View SOS Live Tracker
             </Button>
           </Link>
         </div>
       )}
 
-      {/* LIVE WAITING QUEUE BANNER (If Checked In) */}
+      {/* ACTIVE QUEUE TICKET (If checked in) */}
       {queueEntry && (
-        <div className="p-3.5 sm:p-5 rounded-2xl bg-sky-50 border border-sky-200 text-sky-950 shadow-subtle flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-              <UserCheck className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-sky-600 text-white font-black text-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+              #{queueEntry.queueNumber}
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-sky-700">
-                  Live Clinic Queue
+                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800">
+                  Live Waiting Room Queue
                 </span>
-                <Badge variant="default" className="text-[9px] px-1.5 py-0.5">
-                  {queueEntry.status}
+                <Badge variant={queueEntry.status === 'IN_CONSULTATION' ? 'success' : 'default'} className="text-[9px]">
+                  {queueEntry.status.replace(/_/g, ' ')}
                 </Badge>
               </div>
               <h4 className="text-xs sm:text-sm font-bold text-slate-900 mt-0.5">
-                Queue Token: #{queueEntry.queueNumber} • Est. Wait: ~{queueEntry.estimatedWaitMinutes} mins
+                Dr. {queueEntry.doctor?.user?.firstName} {queueEntry.doctor?.user?.lastName} ({queueEntry.clinic?.name})
               </h4>
-              <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5">
-                Dr. {queueEntry.doctor?.user.lastName} • {queueEntry.clinic?.name}
+              <p className="text-[11px] text-slate-500">
+                Checked in: {formatTime(queueEntry.checkInTime)}
               </p>
             </div>
           </div>
 
           <Link href="/patient/queue" className="w-full sm:w-auto">
-            <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs border-sky-300 text-sky-800 h-9 tap-bounce">
-              View Live Queue
+            <Button size="sm" variant="outline" className="w-full sm:w-auto text-xs font-semibold tap-bounce">
+              <UserCheck className="w-3.5 h-3.5 mr-1 text-sky-600" />
+              Live Queue Ticket
             </Button>
           </Link>
         </div>
       )}
 
-      {/* MOBILE-OPTIMIZED 2x2 ACTION TILES (4 Core Healthcare Touchpoints) */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
-            Healthcare Services
-          </h2>
-          <span className="text-[11px] text-sky-600 font-semibold sm:hidden">
-            Tap to Open
-          </span>
-        </div>
-
-        {/* 2x2 Grid on Mobile / 4-column on Desktop */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          {/* 1. Doctor Consultation */}
-          <Link
-            href="/patient/doctors"
-            className="group p-4 sm:p-5 rounded-2xl border border-slate-200/90 bg-white hover:border-sky-500 hover:shadow-card transition-all flex flex-col justify-between tap-bounce"
-          >
-            <div>
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-sky-50 text-sky-600 group-hover:bg-sky-600 group-hover:text-white flex items-center justify-center mb-3 transition-colors shadow-subtle">
-                <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6" />
+      {/* 2x2 PRIMARY HEALTHCARE ACTION GRID (Mobile-First) */}
+      <section className="space-y-2.5">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 px-1">
+          Healthcare Services
+        </h3>
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+          {/* 1. DOCTOR CONSULTATION */}
+          <Link href="/patient/doctors" className="block group tap-bounce">
+            <Card className="p-3.5 sm:p-5 border border-sky-100 bg-gradient-to-br from-white to-sky-50/50 shadow-subtle hover:border-sky-300 hover:shadow-card transition-all cursor-pointer h-full">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <span className="text-[10px] font-mono font-bold text-sky-700 bg-sky-100/60 px-1.5 py-0.5 rounded">
+                  SPECIALISTS
+                </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded">
-                Consultation
-              </span>
-              <h3 className="text-sm sm:text-base font-bold text-navy-950 mt-1.5 group-hover:text-sky-600 transition-colors">
-                Doctor
-              </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                Book verified specialist appointments.
-              </p>
-            </div>
-
-            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-sky-700">
-              <span>Book Slot</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </div>
+              <div className="mt-3">
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900 group-hover:text-sky-700 transition-colors">
+                  Doctor Consultation
+                </h3>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-snug">
+                  Book verified nearby specialists & check slot availability.
+                </p>
+              </div>
+            </Card>
           </Link>
 
-          {/* 2. Pharmacy Medicine */}
-          <Link
-            href="/patient/medicines"
-            className="group p-4 sm:p-5 rounded-2xl border border-slate-200/90 bg-white hover:border-emerald-500 hover:shadow-card transition-all flex flex-col justify-between tap-bounce"
-          >
-            <div>
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center mb-3 transition-colors shadow-subtle">
-                <Pill className="w-5 h-5 sm:w-6 sm:h-6" />
+          {/* 2. MEDICINE & PHARMACY */}
+          <Link href="/patient/medicines" className="block group tap-bounce">
+            <Card className="p-3.5 sm:p-5 border border-emerald-100 bg-gradient-to-br from-white to-emerald-50/50 shadow-subtle hover:border-emerald-300 hover:shadow-card transition-all cursor-pointer h-full">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Pill className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded">
+                  PHARMACY
+                </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                Pharmacy
-              </span>
-              <h3 className="text-sm sm:text-base font-bold text-navy-950 mt-1.5 group-hover:text-emerald-600 transition-colors">
-                Medicines
-              </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                Check stock & reserve for pickup.
-              </p>
-            </div>
-
-            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-emerald-700">
-              <span>Reserve</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </div>
+              <div className="mt-3">
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900 group-hover:text-emerald-700 transition-colors">
+                  Medicine Stock
+                </h3>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-snug">
+                  Discover local pharmacy stock & order for pickup or delivery.
+                </p>
+              </div>
+            </Card>
           </Link>
 
-          {/* 3. Emergency SOS */}
-          <Link
-            href="/patient/emergency"
-            className="group p-4 sm:p-5 rounded-2xl border-2 border-red-200 bg-red-50/50 hover:bg-red-50 hover:border-red-500 hover:shadow-card transition-all flex flex-col justify-between tap-bounce emergency-pulse"
-          >
-            <div>
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center mb-3 shadow-subtle">
-                <ShieldAlert className="w-5 h-5 sm:w-6 sm:h-6" />
+          {/* 3. EMERGENCY SOS */}
+          <Link href="/patient/emergency" className="block group tap-bounce">
+            <Card className="p-3.5 sm:p-5 border border-red-200 bg-gradient-to-br from-red-50/70 to-rose-50/40 shadow-subtle hover:border-red-400 hover:shadow-card transition-all cursor-pointer h-full">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center emergency-pulse group-hover:scale-105 transition-transform">
+                  <ShieldAlert className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <span className="text-[10px] font-extrabold text-red-600 bg-red-100 px-1.5 py-0.5 rounded">
+                  SOS 24/7
+                </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-red-700 bg-red-100 px-1.5 py-0.5 rounded">
-                Urgent Help
-              </span>
-              <h3 className="text-sm sm:text-base font-bold text-red-950 mt-1.5 group-hover:text-red-600 transition-colors">
-                Emergency
-              </h3>
-              <p className="text-[11px] sm:text-xs text-red-900/80 mt-1 line-clamp-2 leading-relaxed">
-                1-tap ambulance & trauma dispatch.
-              </p>
-            </div>
-
-            <div className="mt-3 pt-2.5 border-t border-red-200/80 flex items-center justify-between text-[11px] font-bold text-red-700">
-              <span>SOS Alert</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </div>
+              <div className="mt-3">
+                <h3 className="font-extrabold text-sm sm:text-base text-red-950 group-hover:text-red-700 transition-colors">
+                  Emergency SOS
+                </h3>
+                <p className="text-[11px] sm:text-xs text-red-900/70 mt-0.5 leading-snug">
+                  1-tap urgent ambulance dispatch with real-time GPS tracking.
+                </p>
+              </div>
+            </Card>
           </Link>
 
-          {/* 4. AI Symptom Triage */}
-          <button
-            type="button"
-            onClick={() => setIsAIModalOpen(true)}
-            className="group p-4 sm:p-5 rounded-2xl border border-sky-300 bg-gradient-to-br from-sky-500/10 via-sky-500/5 to-white hover:border-sky-500 hover:shadow-card transition-all flex flex-col justify-between text-left tap-bounce cursor-pointer"
-          >
-            <div>
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white flex items-center justify-center mb-3 shadow-subtle group-hover:scale-105 transition-transform">
-                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
+          {/* 4. LIVE CLINIC QUEUE */}
+          <Link href="/patient/queue" className="block group tap-bounce">
+            <Card className="p-3.5 sm:p-5 border border-blue-100 bg-gradient-to-br from-white to-blue-50/50 shadow-subtle hover:border-blue-300 hover:shadow-card transition-all cursor-pointer h-full">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <UserCheck className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-100/60 px-1.5 py-0.5 rounded">
+                  WAITING ROOM
+                </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded">
-                AI Assistant
-              </span>
-              <h3 className="text-sm sm:text-base font-bold text-navy-950 mt-1.5 group-hover:text-sky-600 transition-colors">
-                AI Triage
-              </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                Check symptoms & get matched.
-              </p>
-            </div>
-
-            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-sky-700">
-              <span>Start Check</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </div>
-          </button>
+              <div className="mt-3">
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900 group-hover:text-blue-700 transition-colors">
+                  Live Queue
+                </h3>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-snug">
+                  Track your position & estimated consultation wait time live.
+                </p>
+              </div>
+            </Card>
+          </Link>
         </div>
       </section>
 
-      {/* UPCOMING APPOINTMENT DIGITAL CLINIC PASS */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
-            Upcoming Consultation
-          </h2>
-          <Link
-            href="/patient/appointments"
-            className="text-[11px] sm:text-xs text-sky-600 hover:text-sky-800 font-semibold"
-          >
-            All Bookings ({appointments.length})
+      {/* UPCOMING APPOINTMENT CLINICAL PASS */}
+      <section className="space-y-2.5">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Upcoming Appointment
+          </h3>
+          <Link href="/patient/appointments" className="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1">
+            All Bookings <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {upcomingAppointment ? (
-          <div className="p-4 sm:p-6 rounded-2xl border border-slate-200 bg-white shadow-card space-y-3.5 tap-bounce">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                  <Stethoscope className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                      {upcomingAppointment.appointmentNumber}
-                    </span>
-                    <Badge
-                      variant={
-                        upcomingAppointment.status === 'CONFIRMED'
-                          ? 'success'
-                          : upcomingAppointment.status === 'CHECKED_IN'
-                          ? 'default'
-                          : 'secondary'
-                      }
-                      className="text-[9px] px-1.5 py-0.5"
-                    >
-                      {upcomingAppointment.status}
-                    </Badge>
-                  </div>
-
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-1">
-                    Dr. {upcomingAppointment.doctor?.user.firstName} {upcomingAppointment.doctor?.user.lastName}
-                  </h3>
-                  <p className="text-[11px] text-slate-500">
-                    {upcomingAppointment.clinic?.name}
-                  </p>
-                </div>
+          <Card className="p-4 sm:p-5 border border-slate-200 shadow-card rounded-2xl bg-white space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant={
+                    upcomingAppointment.status === 'CONFIRMED'
+                      ? 'success'
+                      : upcomingAppointment.status === 'CHECKED_IN'
+                      ? 'default'
+                      : 'secondary'
+                  }
+                  className="text-[10px]"
+                >
+                  {upcomingAppointment.status.replace(/_/g, ' ')}
+                </Badge>
+                <span className="text-xs font-mono text-slate-400">
+                  Pass #{upcomingAppointment.appointmentNumber}
+                </span>
               </div>
+              <span className="text-xs text-sky-700 font-semibold flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                {formatDate(upcomingAppointment.appointmentDate)} • {formatTime(upcomingAppointment.startTime)}
+              </span>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-slate-50 flex flex-wrap items-center justify-between text-xs text-slate-700 gap-2">
-              <div className="flex items-center gap-1.5 font-medium text-sky-800">
-                <Calendar className="w-3.5 h-3.5 text-sky-600" />
-                <span>{formatDate(upcomingAppointment.appointmentDate)}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                  Dr. {upcomingAppointment.doctor?.user?.firstName} {upcomingAppointment.doctor?.user?.lastName}
+                </h4>
+                <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  {upcomingAppointment.clinic?.name} — {upcomingAppointment.clinic?.address}
+                </p>
               </div>
-              <div className="flex items-center gap-1.5 font-medium text-sky-800">
-                <Clock className="w-3.5 h-3.5 text-sky-600" />
-                <span>{formatTime(upcomingAppointment.startTime)} - {formatTime(upcomingAppointment.endTime)}</span>
-              </div>
-            </div>
 
-            <div className="flex gap-2 pt-1">
-              <Link href="/patient/appointments" className="flex-1">
-                <Button variant="outline" size="sm" className="w-full text-xs h-9 tap-bounce">
-                  Manage Booking
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <Link href="/patient/appointments">
+                  <Button size="sm" variant="outline" className="text-xs font-semibold tap-bounce">
+                    View Details
+                  </Button>
+                </Link>
+                {upcomingAppointment.status === 'CONFIRMED' && (
+                  <Link href="/patient/queue">
+                    <Button size="sm" className="text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white tap-bounce">
+                      Self Check-in
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
-          </div>
+          </Card>
         ) : (
           <div className="p-6 rounded-2xl border border-dashed border-slate-200 bg-white text-center">
             <Calendar className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -450,36 +419,38 @@ export default function PatientDashboard() {
         )}
       </section>
 
-      {/* MOBILE APP DOWNLOAD PROMO CARD */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-navy-950 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-navy-800 shadow-card tap-bounce">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center flex-shrink-0">
-            <Smartphone className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                UCHN Healthcare App
-              </h4>
-              <span className="text-[10px] font-mono px-1 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30">
-                v{APP_CONFIG.version}
-              </span>
+      {/* MOBILE APP DOWNLOAD PROMO CARD (Hidden if already installed) */}
+      {!isAppInstalled && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-navy-950 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-navy-800 shadow-card tap-bounce">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center flex-shrink-0">
+              <Smartphone className="w-5 h-5" />
             </div>
-            <p className="text-[11px] text-slate-300 mt-0.5">
-              Install directly on your phone home screen for 1-tap offline care.
-            </p>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                  UCHN Healthcare App
+                </h4>
+                <span className="text-[10px] font-mono px-1 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30">
+                  v{APP_CONFIG.version}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 mt-0.5">
+                Install directly on your phone home screen for 1-tap offline care.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <Button
-          size="sm"
-          onClick={openDownloadModal}
-          className="bg-sky-500 hover:bg-sky-400 text-navy-950 font-bold text-xs gap-1.5 flex-shrink-0 w-full sm:w-auto h-9 tap-bounce cursor-pointer"
-        >
-          <Download className="w-3.5 h-3.5" />
-          <span>Install App</span>
-        </Button>
-      </div>
+          <Button
+            size="sm"
+            onClick={openDownloadModal}
+            className="bg-sky-500 hover:bg-sky-400 text-navy-950 font-bold text-xs gap-1.5 flex-shrink-0 w-full sm:w-auto h-9 tap-bounce cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Install App</span>
+          </Button>
+        </div>
+      )}
 
       {/* AI Health Assistant Modal */}
       <AIHealthAssistantModal

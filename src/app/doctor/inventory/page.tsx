@@ -68,40 +68,36 @@ export default function DoctorInventoryPage() {
   const { user } = useAuth();
   const { socket } = useSocket();
 
+  const [inventory, setInventory] = useState<MedicineInventoryItem[]>([]);
+  const [purchases, setPurchases] = useState<PatientMedicineOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [purchasesLoading, setPurchasesLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'STOCK' | 'PURCHASES'>('STOCK');
 
-  // Stock inventory states
-  const [inventory, setInventory] = useState<MedicineInventoryItem[]>([]);
-  const [filterStatus, setFilterStatus] = useState<string>('ALL');
+  // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Patient purchase requests states
-  const [purchases, setPurchases] = useState<PatientMedicineOrder[]>([]);
-  const [purchasesLoading, setPurchasesLoading] = useState(false);
-  const [purchaseFilter, setPurchaseFilter] = useState('ALL');
   const [purchaseSearch, setPurchaseSearch] = useState('');
+  const [purchaseFilter, setPurchaseFilter] = useState('ALL');
+
+  // Transaction Modal State
+  const [selectedItem, setSelectedItem] = useState<MedicineInventoryItem | null>(null);
+  const [txType, setTxType] = useState<'RECEIVED' | 'DISPENSED' | 'AUDIT_ADJUSTMENT'>('RECEIVED');
+  const [txQuantity, setTxQuantity] = useState(1);
+  const [txNotes, setTxNotes] = useState('');
+  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
+  const [txLoading, setTxLoading] = useState(false);
   const [dispenseActionLoading, setDispenseActionLoading] = useState<string | null>(null);
 
-  // Stock Transaction Modal
-  const [selectedItem, setSelectedItem] = useState<MedicineInventoryItem | null>(null);
-  const [transactionType, setTransactionType] = useState<'RECEIVED' | 'DISPENSED' | 'ADJUSTED'>('RECEIVED');
-  const [quantityChange, setQuantityChange] = useState<number>(10);
-  const [reason, setReason] = useState('Stock replenishment intake');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [transactionError, setTransactionError] = useState<string | null>(null);
-
-  // Transaction History Modal
+  // History Modal State
   const [historyItem, setHistoryItem] = useState<MedicineInventoryItem | null>(null);
+  const [historyTransactions, setHistoryTransactions] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
-  const fetchInventory = async () => {
+  const fetchInventory = async (query = '') => {
     try {
       setIsLoading(true);
-      const params = new URLSearchParams();
-      if (filterStatus !== 'ALL') params.append('status', filterStatus);
-      if (searchQuery.trim()) params.append('search', searchQuery.trim());
-
-      const res = await fetch(`/api/inventory?${params.toString()}`);
+      const url = query ? `/api/inventory?search=${encodeURIComponent(query)}` : '/api/inventory';
+      const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
         if (json.success) setInventory(json.data.inventory || []);
@@ -113,20 +109,22 @@ export default function DoctorInventoryPage() {
     }
   };
 
-  const fetchPurchases = async () => {
+  const fetchPurchases = async (search = '', filter = 'ALL') => {
     try {
       setPurchasesLoading(true);
       const params = new URLSearchParams();
-      if (purchaseFilter !== 'ALL') params.append('status', purchaseFilter);
-      if (purchaseSearch.trim()) params.append('search', purchaseSearch.trim());
+      if (search) params.append('search', search);
+      if (filter && filter !== 'ALL') params.append('status', filter);
 
       const res = await fetch(`/api/inventory/requests?${params.toString()}`);
       if (res.ok) {
         const json = await res.json();
-        if (json.success) setPurchases(json.data.requests || []);
+        if (json.success) {
+          setPurchases(json.data.requests || []);
+        }
       }
     } catch (e) {
-      console.error('Failed to fetch patient purchase records:', e);
+      console.error(e);
     } finally {
       setPurchasesLoading(false);
     }
@@ -134,110 +132,122 @@ export default function DoctorInventoryPage() {
 
   useEffect(() => {
     fetchInventory();
-  }, [filterStatus]);
-
-  useEffect(() => {
-    if (activeTab === 'PURCHASES') {
-      fetchPurchases();
-    }
-  }, [activeTab, purchaseFilter]);
+    fetchPurchases();
+  }, []);
 
   // Real-time synchronization
   useEffect(() => {
     if (!socket) return;
 
     socket.on('inventory:update', () => {
-      fetchInventory();
-      if (activeTab === 'PURCHASES') fetchPurchases();
+      fetchInventory(searchQuery);
+    });
+
+    socket.on('medicine_order:created', () => {
+      fetchPurchases(purchaseSearch, purchaseFilter);
+    });
+
+    socket.on('medicine_order:status_updated', () => {
+      fetchPurchases(purchaseSearch, purchaseFilter);
     });
 
     return () => {
       socket.off('inventory:update');
+      socket.off('medicine_order:created');
+      socket.off('medicine_order:status_updated');
     };
-  }, [socket, activeTab]);
+  }, [socket, searchQuery, purchaseSearch, purchaseFilter]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchInventory();
+    fetchInventory(searchQuery);
   };
 
   const handlePurchaseSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchPurchases();
+    fetchPurchases(purchaseSearch, purchaseFilter);
   };
 
-  const handleUpdatePurchaseStatus = async (requestId: string, newStatus: string) => {
-    try {
-      setDispenseActionLoading(requestId);
-      const res = await fetch('/api/inventory/requests', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestId, status: newStatus }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        fetchPurchases();
-        fetchInventory();
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setDispenseActionLoading(null);
-    }
-  };
-
-  const openTransactionModal = (
-    item: MedicineInventoryItem,
-    type: 'RECEIVED' | 'DISPENSED' | 'ADJUSTED'
-  ) => {
+  const openTransactionModal = (item: MedicineInventoryItem, type: 'RECEIVED' | 'DISPENSED' | 'AUDIT_ADJUSTMENT') => {
     setSelectedItem(item);
-    setTransactionType(type);
-    setQuantityChange(type === 'DISPENSED' ? 1 : 10);
-    setReason(
-      type === 'RECEIVED'
-        ? 'Restock intake from pharmaceutical distributor'
-        : type === 'DISPENSED'
-        ? 'Dispensed to outpatient clinic patient'
-        : 'Audit stock adjustment'
-    );
-    setTransactionError(null);
+    setTxType(type);
+    setTxQuantity(1);
+    setTxNotes('');
+    setIsTxModalOpen(true);
   };
 
-  const handleTransactionSubmit = async (e: React.FormEvent) => {
+  const handleExecuteTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedItem) return;
+    if (!selectedItem || txQuantity <= 0) return;
 
-    setIsSubmitting(true);
-    setTransactionError(null);
-
-    const delta =
-      transactionType === 'DISPENSED'
-        ? -Math.abs(Number(quantityChange))
-        : Number(quantityChange);
-
+    setTxLoading(true);
     try {
       const res = await fetch('/api/inventory/transaction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           inventoryId: selectedItem.id,
-          type: transactionType,
-          quantityChange: delta,
-          reason: reason.trim(),
+          type: txType,
+          quantity: Number(txQuantity),
+          notes: txNotes || undefined,
         }),
       });
 
       const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || 'Failed to execute stock transaction');
+      if (json.success) {
+        setIsTxModalOpen(false);
+        fetchInventory(searchQuery);
+      } else {
+        alert(json.error?.message || 'Transaction failed');
       }
-
-      setSelectedItem(null);
-      fetchInventory();
-    } catch (err: any) {
-      setTransactionError(err.message || 'Transaction failed');
+    } catch (e) {
+      console.error(e);
+      alert('Network error occurred during transaction');
     } finally {
-      setIsSubmitting(false);
+      setTxLoading(false);
+    }
+  };
+
+  const handleUpdatePurchaseStatus = async (requestId: string, newStatus: string) => {
+    setDispenseActionLoading(requestId);
+    try {
+      const res = await fetch('/api/inventory/requests', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId,
+          status: newStatus,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        fetchPurchases(purchaseSearch, purchaseFilter);
+        fetchInventory(searchQuery);
+      } else {
+        alert(json.error?.message || 'Failed to update order status');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error updating dispense status');
+    } finally {
+      setDispenseActionLoading(null);
+    }
+  };
+
+  const fetchItemHistory = async (item: MedicineInventoryItem) => {
+    setHistoryItem(item);
+    setHistoryLoading(true);
+    try {
+      const res = await fetch(`/api/inventory/transaction?inventoryId=${item.id}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) setHistoryTransactions(json.data.transactions || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -315,29 +325,12 @@ export default function DoctorInventoryPage() {
                 Search
               </Button>
             </form>
-
-            <div className="flex items-center gap-1.5 overflow-x-auto">
-              {['ALL', 'IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK', 'EXPIRED'].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setFilterStatus(s)}
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                    filterStatus === s
-                      ? 'bg-navy-900 text-white shadow-subtle'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  {s.replace('_', ' ')}
-                </button>
-              ))}
-            </div>
           </div>
 
-          {/* Inventory Table */}
           {isLoading ? (
             <div className="py-16 text-center">
               <Loader2 className="w-8 h-8 animate-spin text-sky-600 mx-auto" />
-              <p className="text-xs text-slate-500 mt-2">Loading pharmacy inventory...</p>
+              <p className="text-xs text-slate-500 mt-2">Loading clinical medicine inventory...</p>
             </div>
           ) : inventory.length === 0 ? (
             <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-slate-200">
@@ -348,104 +341,185 @@ export default function DoctorInventoryPage() {
               </p>
             </div>
           ) : (
-            <Card className="border border-slate-200 shadow-card overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                    <tr>
-                      <th className="py-3.5 px-4">Medicine & Formula</th>
-                      <th className="py-3.5 px-3">SKU / Batch</th>
-                      <th className="py-3.5 px-3">Category</th>
-                      <th className="py-3.5 px-3 text-right">Available Qty</th>
-                      <th className="py-3.5 px-3 text-right">Min Threshold</th>
-                      <th className="py-3.5 px-3 text-right">Unit Price</th>
-                      <th className="py-3.5 px-3">Expiry Date</th>
-                      <th className="py-3.5 px-3">Status</th>
-                      <th className="py-3.5 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {inventory.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-slate-900">
-                          <div>{item.medicine.name}</div>
-                          <div className="text-[11px] text-slate-400 font-normal">
-                            {item.medicine.genericName} • {item.medicine.strength}
-                          </div>
-                        </td>
-                        <td className="py-3 px-3 font-mono text-[11px] text-slate-600">
-                          <div>{item.sku}</div>
-                          <div className="text-[10px] text-slate-400">{item.batchNumber}</div>
-                        </td>
-                        <td className="py-3 px-3 text-slate-600 font-medium">
-                          {item.medicine.category}
-                        </td>
-                        <td className="py-3 px-3 text-right font-bold text-slate-900 text-sm">
-                          {item.quantity}
-                        </td>
-                        <td className="py-3 px-3 text-right text-slate-500">
-                          {item.minThreshold}
-                        </td>
-                        <td className="py-3 px-3 text-right font-medium text-slate-700">
-                          {formatCurrency(item.unitPrice)}
-                        </td>
-                        <td className="py-3 px-3 text-slate-600">
-                          {formatDate(item.expiryDate)}
-                        </td>
-                        <td className="py-3 px-3">
-                          <Badge
-                            variant={
-                              item.status === 'IN_STOCK'
-                                ? 'success'
-                                : item.status === 'LOW_STOCK'
-                                ? 'warning'
-                                : 'destructive'
-                            }
-                            className="text-[10px]"
-                          >
-                            {item.status.replace('_', ' ')}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openTransactionModal(item, 'RECEIVED')}
-                              className="h-7 px-2 text-[11px] text-emerald-700 hover:bg-emerald-50 border-emerald-300 cursor-pointer"
-                              title="Stock In (+)"
-                            >
-                              <Plus className="w-3 h-3 mr-0.5" /> In
-                            </Button>
+            <div>
+              {/* Mobile Cards (sm:hidden) */}
+              <div className="sm:hidden space-y-3">
+                {inventory.map((item) => (
+                  <Card key={item.id} className="p-3.5 border border-slate-200 shadow-sm space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm">{item.medicine.name}</h4>
+                        <p className="text-[11px] text-slate-400">
+                          {item.medicine.genericName} • {item.medicine.strength}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          item.status === 'IN_STOCK'
+                            ? 'success'
+                            : item.status === 'LOW_STOCK'
+                            ? 'warning'
+                            : 'destructive'
+                        }
+                        className="text-[10px]"
+                      >
+                        {item.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
 
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={item.quantity === 0}
-                              onClick={() => openTransactionModal(item, 'DISPENSED')}
-                              className="h-7 px-2 text-[11px] text-sky-700 hover:bg-sky-50 border-sky-300 cursor-pointer"
-                              title="Dispense (-)"
-                            >
-                              <Minus className="w-3 h-3 mr-0.5" /> Dispense
-                            </Button>
+                    <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Available Qty</span>
+                        <span className="font-black text-slate-900 text-sm">{item.quantity} units</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Unit Price</span>
+                        <span className="font-bold text-slate-700">{formatCurrency(item.unitPrice)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">SKU / Batch</span>
+                        <span className="font-mono text-[11px] text-slate-600 truncate block">{item.sku}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Expiry Date</span>
+                        <span className="text-slate-600">{formatDate(item.expiryDate)}</span>
+                      </div>
+                    </div>
 
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setHistoryItem(item)}
-                              className="h-7 px-1.5 text-slate-400 hover:text-slate-700 cursor-pointer"
-                              title="View Transaction History"
-                            >
-                              <History className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    <div className="flex items-center gap-2 pt-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openTransactionModal(item, 'RECEIVED')}
+                        className="flex-1 h-8 text-xs text-emerald-700 hover:bg-emerald-50 border-emerald-300 tap-bounce"
+                      >
+                        <Plus className="w-3.5 h-3.5 mr-1" /> Stock In
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={item.quantity === 0}
+                        onClick={() => openTransactionModal(item, 'DISPENSED')}
+                        className="flex-1 h-8 text-xs text-sky-700 hover:bg-sky-50 border-sky-300 tap-bounce"
+                      >
+                        <Minus className="w-3.5 h-3.5 mr-1" /> Dispense
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => fetchItemHistory(item)}
+                        className="h-8 px-2 text-slate-400 hover:text-slate-700 tap-bounce"
+                        title="History"
+                      >
+                        <History className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
               </div>
-            </Card>
+
+              {/* Desktop Table (hidden sm:block) */}
+              <Card className="hidden sm:block border border-slate-200 shadow-card overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th className="py-3.5 px-4">Medicine & Formula</th>
+                        <th className="py-3.5 px-3">SKU / Batch</th>
+                        <th className="py-3.5 px-3">Category</th>
+                        <th className="py-3.5 px-3 text-right">Available Qty</th>
+                        <th className="py-3.5 px-3 text-right">Min Threshold</th>
+                        <th className="py-3.5 px-3 text-right">Unit Price</th>
+                        <th className="py-3.5 px-3">Expiry Date</th>
+                        <th className="py-3.5 px-3">Status</th>
+                        <th className="py-3.5 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {inventory.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="py-3 px-4 font-semibold text-slate-900">
+                            <div>{item.medicine.name}</div>
+                            <div className="text-[11px] text-slate-400 font-normal">
+                              {item.medicine.genericName} • {item.medicine.strength}
+                            </div>
+                          </td>
+                          <td className="py-3 px-3 font-mono text-[11px] text-slate-600">
+                            <div>{item.sku}</div>
+                            <div className="text-[10px] text-slate-400">{item.batchNumber}</div>
+                          </td>
+                          <td className="py-3 px-3 text-slate-600 font-medium">
+                            {item.medicine.category}
+                          </td>
+                          <td className="py-3 px-3 text-right font-bold text-slate-900 text-sm">
+                            {item.quantity}
+                          </td>
+                          <td className="py-3 px-3 text-right text-slate-500">
+                            {item.minThreshold}
+                          </td>
+                          <td className="py-3 px-3 text-right font-medium text-slate-700">
+                            {formatCurrency(item.unitPrice)}
+                          </td>
+                          <td className="py-3 px-3 text-slate-600">
+                            {formatDate(item.expiryDate)}
+                          </td>
+                          <td className="py-3 px-3">
+                            <Badge
+                              variant={
+                                item.status === 'IN_STOCK'
+                                  ? 'success'
+                                  : item.status === 'LOW_STOCK'
+                                  ? 'warning'
+                                  : 'destructive'
+                              }
+                              className="text-[10px]"
+                            >
+                              {item.status.replace('_', ' ')}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openTransactionModal(item, 'RECEIVED')}
+                                className="h-7 px-2 text-[11px] text-emerald-700 hover:bg-emerald-50 border-emerald-300 cursor-pointer"
+                                title="Stock In (+)"
+                              >
+                                <Plus className="w-3 h-3 mr-0.5" /> In
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={item.quantity === 0}
+                                onClick={() => openTransactionModal(item, 'DISPENSED')}
+                                className="h-7 px-2 text-[11px] text-sky-700 hover:bg-sky-50 border-sky-300 cursor-pointer"
+                                title="Dispense (-)"
+                              >
+                                <Minus className="w-3 h-3 mr-0.5" /> Dispense
+                              </Button>
+
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => fetchItemHistory(item)}
+                                className="h-7 px-1.5 text-slate-400 hover:text-slate-700 cursor-pointer"
+                                title="View Transaction History"
+                              >
+                                <History className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </div>
           )}
         </div>
       )}
@@ -466,12 +540,12 @@ export default function DoctorInventoryPage() {
               </Button>
             </form>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {['ALL', 'PENDING', 'READY_FOR_PICKUP', 'DISPENSED', 'REJECTED'].map((st) => (
                 <button
                   key={st}
                   onClick={() => setPurchaseFilter(st)}
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                  className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer tap-bounce ${
                     purchaseFilter === st
                       ? 'bg-navy-900 text-white shadow-subtle'
                       : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -501,7 +575,7 @@ export default function DoctorInventoryPage() {
               {purchases.map((order) => (
                 <Card
                   key={order.id}
-                  className="p-5 border border-slate-200 shadow-sm hover:border-slate-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="p-4 sm:p-5 border border-slate-200 shadow-sm hover:border-slate-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
@@ -571,7 +645,7 @@ export default function DoctorInventoryPage() {
                         size="sm"
                         onClick={() => handleUpdatePurchaseStatus(order.id, 'READY_FOR_PICKUP')}
                         disabled={dispenseActionLoading === order.id}
-                        className="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 h-8 flex items-center gap-1 cursor-pointer"
+                        className="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 h-8 flex items-center gap-1 cursor-pointer tap-bounce"
                       >
                         {dispenseActionLoading === order.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -587,7 +661,7 @@ export default function DoctorInventoryPage() {
                         size="sm"
                         onClick={() => handleUpdatePurchaseStatus(order.id, 'DISPENSED')}
                         disabled={dispenseActionLoading === order.id}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 h-8 flex items-center gap-1 cursor-pointer"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 h-8 flex items-center gap-1 cursor-pointer tap-bounce"
                       >
                         {dispenseActionLoading === order.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -598,11 +672,16 @@ export default function DoctorInventoryPage() {
                       </Button>
                     )}
 
-                    {order.status === 'DISPENSED' && (
-                      <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        Dispensed & Logged
-                      </span>
+                    {order.status === 'PENDING' && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleUpdatePurchaseStatus(order.id, 'REJECTED')}
+                        disabled={dispenseActionLoading === order.id}
+                        className="text-xs text-slate-400 hover:text-rose-600 h-8 px-2 tap-bounce"
+                      >
+                        Cancel
+                      </Button>
                     )}
                   </div>
                 </Card>
@@ -612,187 +691,130 @@ export default function DoctorInventoryPage() {
         </div>
       )}
 
-      {/* Stock Transaction Modal */}
-      {selectedItem && (
-        <Modal
-          isOpen={!!selectedItem}
-          onClose={() => setSelectedItem(null)}
-          title={`Stock Transaction — ${selectedItem.medicine.name}`}
-          description={`SKU: ${selectedItem.sku} • Current Stock: ${selectedItem.quantity} units`}
-          maxWidth="md"
-        >
-          <form onSubmit={handleTransactionSubmit} className="space-y-4">
-            {transactionError && (
-              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{transactionError}</span>
-              </div>
-            )}
+      {/* TRANSACTION MODAL (Stock In / Dispense) */}
+      <Modal
+        isOpen={isTxModalOpen}
+        onClose={() => setIsTxModalOpen(false)}
+        title={
+          txType === 'RECEIVED'
+            ? 'Receive Medicine Stock (Inflow)'
+            : txType === 'DISPENSED'
+            ? 'Dispense Medicine (Outflow)'
+            : 'Audit Stock Adjustment'
+        }
+        maxWidth="sm"
+      >
+        {selectedItem && (
+          <form onSubmit={handleExecuteTransaction} className="space-y-4">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+              <span className="font-bold text-slate-900 block">{selectedItem.medicine.name}</span>
+              <span className="text-slate-500 block">
+                {selectedItem.medicine.genericName} • {selectedItem.medicine.strength}
+              </span>
+              <span className="font-mono text-slate-400 text-[10px] block mt-1">
+                Batch: {selectedItem.batchNumber} • Current Stock: {selectedItem.quantity}
+              </span>
+            </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                Transaction Type
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">
+                Quantity {txType === 'RECEIVED' ? 'to Receive' : 'to Dispense'}
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTransactionType('RECEIVED');
-                    setReason('Restock intake from distributor');
-                  }}
-                  className={`p-2.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                    transactionType === 'RECEIVED'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  Stock In (+)
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTransactionType('DISPENSED');
-                    setReason('Dispensed to patient');
-                  }}
-                  className={`p-2.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                    transactionType === 'DISPENSED'
-                      ? 'border-sky-600 bg-sky-50 text-sky-900'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  Dispense (-)
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTransactionType('ADJUSTED');
-                    setReason('Audit stock adjustment');
-                  }}
-                  className={`p-2.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                    transactionType === 'ADJUSTED'
-                      ? 'border-amber-600 bg-amber-50 text-amber-900'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  Adjust (±)
-                </button>
-              </div>
-            </div>
-
-            <div>
               <Input
-                label="Quantity Amount"
                 type="number"
-                min={1}
-                max={transactionType === 'DISPENSED' ? selectedItem.quantity : undefined}
+                min="1"
+                max={txType === 'DISPENSED' ? selectedItem.quantity : 9999}
+                value={txQuantity}
+                onChange={(e) => setTxQuantity(parseInt(e.target.value) || 0)}
                 required
-                value={quantityChange}
-                onChange={(e) => setQuantityChange(parseInt(e.target.value) || 1)}
-                helperText={
-                  transactionType === 'DISPENSED'
-                    ? `Max available to dispense: ${selectedItem.quantity} units`
-                    : ''
-                }
               />
             </div>
 
-            <div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Notes / Reason (Optional)</label>
               <Input
-                label="Mandatory Reason / Reference"
-                required
-                placeholder="e.g. Batch intake invoice #8812, prescription dispense, etc."
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
+                placeholder="e.g. Counter prescription dispense, batch replenishment"
+                value={txNotes}
+                onChange={(e) => setTxNotes(e.target.value)}
               />
             </div>
 
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setSelectedItem(null)}
-                className="cursor-pointer"
+                onClick={() => setIsTxModalOpen(false)}
               >
                 Cancel
               </Button>
-              <Button type="submit" size="sm" isLoading={isSubmitting} className="cursor-pointer">
-                Execute Transaction
+              <Button
+                type="submit"
+                size="sm"
+                isLoading={txLoading}
+                className={txType === 'RECEIVED' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-sky-600 hover:bg-sky-700'}
+              >
+                Confirm {txType === 'RECEIVED' ? 'Stock In' : 'Dispense'}
               </Button>
             </div>
           </form>
-        </Modal>
-      )}
+        )}
+      </Modal>
 
-      {/* Transaction History Modal */}
-      {historyItem && (
-        <Modal
-          isOpen={!!historyItem}
-          onClose={() => setHistoryItem(null)}
-          title={`Stock Audit History — ${historyItem.medicine.name}`}
-          description={`SKU: ${historyItem.sku} • Batch: ${historyItem.batchNumber}`}
-          maxWidth="lg"
-        >
-          <div className="space-y-3">
-            {historyItem.transactions?.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-6">
-                No past transactions recorded for this batch.
-              </p>
+      {/* HISTORY MODAL */}
+      <Modal
+        isOpen={!!historyItem}
+        onClose={() => setHistoryItem(null)}
+        title="Transaction History Log"
+        maxWidth="md"
+      >
+        {historyItem && (
+          <div className="space-y-4">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+              <span className="font-bold text-slate-900 block">{historyItem.medicine.name}</span>
+              <span className="text-slate-500 block">
+                SKU: {historyItem.sku} • Current Quantity: {historyItem.quantity}
+              </span>
+            </div>
+
+            {historyLoading ? (
+              <div className="py-8 text-center">
+                <Loader2 className="w-6 h-6 animate-spin text-sky-600 mx-auto" />
+              </div>
+            ) : historyTransactions.length === 0 ? (
+              <div className="p-6 text-center text-xs text-slate-400">
+                No transactions recorded for this stock item.
+              </div>
             ) : (
-              <div className="space-y-2">
-                {historyItem.transactions?.map((tx) => (
+              <div className="space-y-2 max-h-72 overflow-y-auto">
+                {historyTransactions.map((tx) => (
                   <div
                     key={tx.id}
-                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/70 flex items-center justify-between text-xs"
+                    className="p-3 rounded-xl border border-slate-100 bg-white flex items-center justify-between text-xs"
                   >
                     <div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            tx.type === 'RECEIVED'
-                              ? 'success'
-                              : tx.type === 'DISPENSED'
-                              ? 'default'
-                              : 'warning'
-                          }
-                          className="text-[9px]"
-                        >
-                          {tx.type} ({tx.quantityChange > 0 ? `+${tx.quantityChange}` : tx.quantityChange})
-                        </Badge>
-                        <span className="font-semibold text-slate-900">
-                          {tx.reason || 'Stock update'}
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-slate-400 mt-0.5 block">
-                        Previous: {tx.previousQuantity} → New: {tx.newQuantity} • By{' '}
-                        {tx.performedBy ? `${tx.performedBy.firstName} ${tx.performedBy.lastName}` : 'System'}
+                      <span className="font-bold text-slate-800">
+                        {tx.type === 'RECEIVED' ? '+ Received' : '- Dispensed'} ({tx.quantity} units)
                       </span>
+                      <span className="text-[11px] text-slate-400 block">
+                        {formatDate(tx.createdAt)} • By {tx.user?.firstName} {tx.user?.lastName}
+                      </span>
+                      {tx.notes && (
+                        <span className="text-[11px] text-slate-500 italic block mt-0.5">
+                          &ldquo;{tx.notes}&rdquo;
+                        </span>
+                      )}
                     </div>
-
-                    <span className="text-[11px] text-slate-400">
-                      {formatDate(tx.timestamp)}
-                    </span>
+                    <Badge variant={tx.type === 'RECEIVED' ? 'success' : 'default'} className="text-[10px]">
+                      {tx.type}
+                    </Badge>
                   </div>
                 ))}
               </div>
             )}
-
-            <div className="pt-3 border-t border-slate-100 flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setHistoryItem(null)}
-                className="cursor-pointer"
-              >
-                Close
-              </Button>
-            </div>
           </div>
-        </Modal>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }
-

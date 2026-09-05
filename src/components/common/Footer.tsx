@@ -7,7 +7,7 @@ import { useAppDownload } from '@/context/AppDownloadContext';
 import { APP_CONFIG } from '@/config/version';
 
 export function Footer() {
-  const { openDownloadModal } = useAppDownload();
+  const { openDownloadModal, isAppInstalled } = useAppDownload();
 
   return (
     <footer className="w-full border-t border-slate-200 bg-white py-6 px-4 sm:px-6 lg:px-8 text-xs text-slate-500 mt-auto hidden sm:block">
@@ -18,7 +18,7 @@ export function Footer() {
             <span className="font-bold text-slate-900 tracking-tight">{APP_CONFIG.shortName}</span>
             <button
               onClick={openDownloadModal}
-              className="px-2 py-0.5 rounded-full bg-slate-100 hover:bg-sky-50 text-slate-600 hover:text-sky-700 font-mono text-[11px] font-semibold border border-slate-200 transition-colors"
+              className="px-2 py-0.5 rounded-full bg-slate-100 hover:bg-sky-50 text-slate-600 hover:text-sky-700 font-mono text-[11px] font-semibold border border-slate-200 transition-colors cursor-pointer"
               title="Click to view App version details & install guide"
             >
               v{APP_CONFIG.version}
@@ -30,13 +30,20 @@ export function Footer() {
 
         {/* Right: Quick actions */}
         <div className="flex items-center gap-4">
-          <button
-            onClick={openDownloadModal}
-            className="flex items-center gap-1.5 text-sky-600 hover:text-sky-800 font-semibold transition-colors"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Download & Install App</span>
-          </button>
+          {!isAppInstalled ? (
+            <button
+              onClick={openDownloadModal}
+              className="flex items-center gap-1.5 text-sky-600 hover:text-sky-800 font-semibold transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download & Install App</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 text-sky-700 font-medium bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200">
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>App v{APP_CONFIG.version} Active</span>
+            </div>
+          )}
           <span className="text-slate-300">•</span>
           <div className="flex items-center gap-1.5 text-slate-400">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />

@@ -17,7 +17,7 @@ export function InstallPwaPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const { openDownloadModal } = useAppDownload();
+  const { openDownloadModal, isAppInstalled } = useAppDownload();
 
   useEffect(() => {
     // Check if already installed & running in standalone mode
@@ -87,7 +87,7 @@ export function InstallPwaPrompt() {
     localStorage.setItem('uchn_pwa_dismissed', Date.now().toString());
   };
 
-  if (isStandalone || !isVisible) return null;
+  if (isStandalone || isAppInstalled || !isVisible) return null;
 
   return (
     <div className="fixed bottom-20 sm:bottom-6 right-4 left-4 sm:left-auto sm:max-w-md z-50 animate-in fade-in slide-in-from-bottom duration-300">

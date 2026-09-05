@@ -14,7 +14,7 @@ import { APP_CONFIG } from '@/config/version';
 export function Navbar() {
   const { user, logout } = useAuth();
   const { location, openLocationModal } = useLocation();
-  const { openDownloadModal } = useAppDownload();
+  const { openDownloadModal, isAppInstalled, toggleDoctorDrawer } = useAppDownload();
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
@@ -40,7 +40,7 @@ export function Navbar() {
                   e.preventDefault();
                   openDownloadModal();
                 }}
-                className="px-1.5 py-0.5 rounded-md bg-sky-50 hover:bg-sky-100 text-sky-700 font-mono text-[10px] font-bold border border-sky-200 transition-colors"
+                className="px-1.5 py-0.5 rounded-md bg-sky-50 hover:bg-sky-100 text-sky-700 font-mono text-[10px] font-bold border border-sky-200 transition-colors cursor-pointer"
                 title="Click to view App Version details & Download options"
               >
                 v{APP_CONFIG.version}
@@ -64,17 +64,19 @@ export function Navbar() {
 
         {/* Right Section Actions & User Status */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Universal Download App Button */}
-          <button
-            type="button"
-            onClick={openDownloadModal}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-sky-800 text-xs font-semibold shadow-subtle transition-all"
-            title="Download & Install UCHN Healthcare App"
-          >
-            <Smartphone className="w-3.5 h-3.5 text-sky-600" />
-            <span className="hidden sm:inline">Install App</span>
-            <span className="sm:hidden">App</span>
-          </button>
+          {/* Universal Download App Button (Hidden if already installed) */}
+          {!isAppInstalled && (
+            <button
+              type="button"
+              onClick={openDownloadModal}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-sky-200 bg-sky-50/70 hover:bg-sky-100 text-sky-800 text-xs font-semibold shadow-subtle transition-all tap-bounce cursor-pointer"
+              title="Download & Install UCHN Healthcare App"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-sky-600" />
+              <span className="hidden sm:inline">Install App</span>
+              <span className="sm:hidden">App</span>
+            </button>
+          )}
           {user ? (
             <>
               {/* Emergency Quick Shortcut if Patient (Desktop) */}
